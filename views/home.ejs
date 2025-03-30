@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logged_in_user</title>
+  </head>
+  <body>
+    <button id="logout">Logout</button>
+
+    <h2>home</h2>
+
+    <script>
+      document.getElementById('logout').addEventListener('click', () => {
+        fetch('http://localhost:3000/logout', {
+          method: 'POST',
+          credentials: 'include', // Include session cookies
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.redirect) {
+              window.location.href = data.redirect; // Manually redirect the user
+            }
+          })
+          .catch((err) => console.error('Error logging out:', err));
+      });
+    </script>
+  </body>
+</html>

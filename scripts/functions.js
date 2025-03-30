@@ -1,0 +1,86 @@
+const sqlite3 = require('sqlite3');
+const crypto = require('crypto');
+
+const db = new sqlite3.Database(
+  'C:\\Users\\paulm\\OneDrive\\Desktop\\Coding\\JS\\project-2\\data.db',
+  sqlite3.OPEN_READWRITE,
+  (err) => {
+    if (err) {
+      console.error('Error while connecting', err);
+    }
+  }
+);
+
+function getFormattedDate() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}_${hours}:${minutes}`;
+}
+
+const fetchUserFromDB = async (user) => {
+  try {
+    return new Promise((resolve, reject) => {
+      db.all(`SELECT * FROM users WHERE name = ?`, [user], (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const makeHash = (input) => {
+  return crypto.hash('sha512', input);
+};
+
+const insertUser = async (username, password, bday) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'INSERT INTO users (name, password, bday, acc_created) VALUES (?, ?, ?, ?)',
+      [username, makeHash(password), bday, getFormattedDate()],
+      (err, ret) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(ret);
+        }
+      }
+    );
+  });
+};
+
+const loginCheck = async (user, password) => {
+  let result = await fetchUserFromDB(user);
+
+  if (result[0].length === 0) {
+    return false;
+  }
+
+  if (result[0].password === makeHash(password)) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+const checkIfUsernameAvailable = async (user) => {
+  let result = await fetchUserFromDB(user);
+
+  return result.length;
+};
+
+module.exports = {
+  loginCheck,
+  checkIfUsernameAvailable,
+  insertUser,
+};

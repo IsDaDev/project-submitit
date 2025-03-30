@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register</title>
+    <style>
+      #password_warning,
+      #username_warning {
+        display: none;
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="/register" method="POST">
+      <label for="username">Username: </label>
+      <input type="text" name="username" id="username" class="register_input" />
+      <p id="username_warning"></p>
+      <br />
+      <label for="password">Password: </label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="register_input"
+      />
+      <br />
+      <label for="re_password">Repeat Password: </label>
+      <input
+        type="password"
+        name="re_password"
+        id="re_password"
+        class="register_input"
+      />
+      <p id="password_warning">Passwords do not match</p>
+      <br />
+      <label for="bday">Birthday: </label>
+      <input type="date" name="bday" id="bday" class="register_input" />
+      <br />
+      <label for="agb">
+        Hereby you confirm you read the <a href="/agb">AGBs</a>
+      </label>
+      <input type="checkbox" name="agb" id="agb" />
+      <br />
+      <button type="submit">Register</button>
+    </form>
+
+    <script>
+      // validate username
+      document.querySelector('#username').addEventListener('blur', () => {
+        let username = document.querySelector('#username').value;
+        let username_warning = document.querySelector('#username_warning');
+        fetch('http://localhost:3000/validateUsername', {
+          method: 'POST',
+          body: JSON.stringify({ user: username }),
+          headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.response !== 'Successful') {
+              username_warning.style.display = 'block';
+              username_warning.innerHTML = data.response;
+            } else {
+              username_warning.style.display = 'none';
+            }
+          });
+      });
+
+      // validate that passwords match
+      document.querySelector('#re_password').addEventListener('blur', () => {
+        let pass1 = document.querySelector('#password').value;
+        let pass2 = document.querySelector('#re_password').value;
+        let password_warning = document.querySelector('#password_warning');
+        if (pass1 !== pass2) {
+          password_warning.style.display = 'block';
+        } else {
+          password_warning.style.display = 'none';
+        }
+      });
+    </script>
+  </body>
+</html>
