@@ -41,10 +41,19 @@ app.post('/register', async (req, res) => {
     let password = req.body.password;
     let bday = req.body.bday;
 
-    await func.insertUser(username, password, bday);
+    const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
+    const passwordRe = new RegExp(
+      `^(?!.*(--|;|'|"|/\*|\*/|union|select|insert|update|delete|drop|xp_))[\w!@#$%^&*()-+=]{8,64}$`
+    );
 
-    req.session.user = username;
-    res.redirect('/');
+    if (re.test(username) && passwordRe.test(password)) {
+      await func.insertUser(username, password, bday);
+
+      req.session.user = username;
+      res.redirect('/');
+    } else {
+      throw new Error('Invalid Characters');
+    }
   } catch (err) {
     console.error('Error while registering:', err);
     res.status(500).send('Error while registering, try again');
@@ -85,7 +94,7 @@ app.post('/validateUsername', async (req, res) => {
     return res.json({ response: 'Invalid username' });
   }
 
-  const re = new RegExp('^[a-zA-Z0-9_.@]{1,50}$');
+  const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
 
   let isValidUser = await func.checkIfUsernameAvailable(req.body.user);
 
