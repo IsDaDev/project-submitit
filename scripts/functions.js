@@ -1,15 +1,14 @@
 const sqlite3 = require('sqlite3');
 const crypto = require('crypto');
+const path = require('path');
 
-const db = new sqlite3.Database(
-  'C:\\Users\\paulm\\OneDrive\\Desktop\\Coding\\JS\\project-2\\data.db',
-  sqlite3.OPEN_READWRITE,
-  (err) => {
-    if (err) {
-      console.error('Error while connecting', err);
-    }
+const filePath = path.join(__dirname, '..', 'data.db');
+
+const db = new sqlite3.Database(filePath, sqlite3.OPEN_READWRITE, (err) => {
+  if (err) {
+    console.error('Error while connecting', err);
   }
-);
+});
 
 function getFormattedDate() {
   const now = new Date();
@@ -60,15 +59,20 @@ const insertUser = async (username, password, bday) => {
 };
 
 const loginCheck = async (user, password) => {
-  let result = await fetchUserFromDB(user);
+  try {
+    let result = await fetchUserFromDB(user);
 
-  if (result[0].length === 0) {
-    return false;
-  }
+    if (result[0].length === 0) {
+      return false;
+    }
 
-  if (result[0].password === makeHash(password)) {
-    return true;
-  } else {
+    if (result[0].password === makeHash(password)) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(`Faulty login\nUser tried to log in via ${user}:${password}`);
     return false;
   }
 };

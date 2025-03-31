@@ -1,5 +1,4 @@
 // TODO: add AGBs
-//       input sanitization for sql
 // ************************************
 const express = require('express');
 const dotenv = require('dotenv');
