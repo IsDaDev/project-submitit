@@ -7,19 +7,29 @@
   </head>
   <body>
     <h2>home</h2>
-    <button id="logout"><a>Logout</a></button>
-    <br />
+
+    <% if (logged_in) { %>
     <button id="profile_button"><a href="/profile">Show Profile</a></button>
+    <button id="logout"><a>Logout</a></button>
+    <% } else { %>
+    <button id="login"><a href="/login">Login</a></button>
+    <% } %>
+
+    <h3>List of subforums:</h3>
+    <% subforumList.forEach(element => { %>
+    <h5>Subforum <%= element['name'] %></h5>
+    <% }) %>
+
     <script>
       document.getElementById('logout').addEventListener('click', () => {
         fetch('/logout', {
           method: 'POST',
-          credentials: 'include', // Include session cookies
+          credentials: 'include',
         })
           .then((response) => response.json())
           .then((data) => {
             if (data.redirect) {
-              window.location.href = data.redirect; // Manually redirect the user
+              window.location.href = data.redirect;
             }
           })
           .catch((err) => console.error('Error logging out:', err));

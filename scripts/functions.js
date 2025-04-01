@@ -45,7 +45,9 @@ const fetchFromDB = async (selection, database, condition) => {
       sql = `SELECT ${selection} FROM ${database}`;
 
       if (condition != '') {
-        sql += ` WHERE ${condition}`;
+        sql += ` WHERE ${condition};`;
+      } else {
+        sql += ';';
       }
 
       db.all(sql, (err, data) => {
@@ -55,6 +57,8 @@ const fetchFromDB = async (selection, database, condition) => {
           data.forEach((element) => {
             retData.push(element);
           });
+          console.log(sql);
+          console.log(retData);
           resolve(retData);
         }
       });

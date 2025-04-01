@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= sub['name'] %></title>
+  </head>
+  <body>
+    <p style="display: none" class="subforum_id"><%= sub['subforum_id'] %></p>
+    <h2>Welcome to <%= sub['name'] %></h2>
+
+    <% posts.forEach(element => { %>
+    <div class="post">
+      <h4><%= element['title'] %></h4>
+      <p><%= element['content'] %></p>
+    </div>
+    <% }) %>
+
+    <button id="loadMorePosts"><a>Load more ...</a></button>
+
+    <script>
+      document.querySelector('#loadMorePosts').addEventListener('click', () => {
+        fetch('/loadMorePosts', {
+          method: 'post',
+          body: {
+            sub: document.querySelector('.subforum_id').innerHTML,
+            hey: 'hello',
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -14,12 +14,14 @@ app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
-app.get('/', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/login');
-  } else {
-    res.render('home');
+app.get('/', async (req, res) => {
+  let userStatus = false;
+  let subforumList = await func.fetchFromDB('*', 'subforums', '');
+  console.log(subforumList);
+  if (req.session.user) {
+    userStatus = true;
   }
+  res.render('home', { logged_in: userStatus, subforumList: subforumList });
 });
 
 app.get('/register', (req, res) => {
@@ -118,4 +120,31 @@ app.get('/profile', async (req, res) => {
 
     res.render('profile', { profile: profile[0] });
   }
+});
+
+app.get('/s/:sub', async (req, res) => {
+  let subforum = await func.fetchFromDB(
+    '*',
+    'subforums',
+    `name = '${req.params.sub}'`
+  );
+  let content = await func.fetchFromDB(
+    '*',
+    'posts',
+    `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
+  );
+  if (subforum.length > 0) {
+    res.render('sub', {
+      sub: subforum[0],
+      posts: content,
+      posts_loaded: content.length,
+    });
+  } else {
+    res.send('Not available');
+  }
+});
+
+app.post('/loadMorePosts', (req, res) => {
+  console.log(req.body);
+  res.send('hey');
 });
