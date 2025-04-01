@@ -6,13 +6,13 @@
     <title>logged_in_user</title>
   </head>
   <body>
-    <button id="logout">Logout</button>
-
     <h2>home</h2>
-
+    <button id="logout"><a>Logout</a></button>
+    <br />
+    <button id="profile_button"><a href="/profile">Show Profile</a></button>
     <script>
       document.getElementById('logout').addEventListener('click', () => {
-        fetch('http://localhost:3000/logout', {
+        fetch('/logout', {
           method: 'POST',
           credentials: 'include', // Include session cookies
         })

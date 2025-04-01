@@ -38,6 +38,32 @@ const fetchUserFromDB = async (user) => {
   }
 };
 
+const fetchFromDB = async (selection, database, condition) => {
+  try {
+    let retData = [];
+    return new Promise((resolve, reject) => {
+      sql = `SELECT ${selection} FROM ${database}`;
+
+      if (condition != '') {
+        sql += ` WHERE ${condition}`;
+      }
+
+      db.all(sql, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          data.forEach((element) => {
+            retData.push(element);
+          });
+          resolve(retData);
+        }
+      });
+    });
+  } catch (error) {
+    return false;
+  }
+};
+
 const makeHash = (input) => {
   return crypto.hash('sha512', input);
 };
@@ -78,7 +104,7 @@ const loginCheck = async (user, password) => {
 };
 
 const checkIfUsernameAvailable = async (user) => {
-  let result = await fetchUserFromDB(user);
+  let result = await fetchFromDB('*', 'users', `name = '${user}'`);
 
   return result.length;
 };
@@ -87,4 +113,5 @@ module.exports = {
   loginCheck,
   checkIfUsernameAvailable,
   insertUser,
+  fetchFromDB,
 };

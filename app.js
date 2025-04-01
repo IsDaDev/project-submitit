@@ -105,3 +105,17 @@ app.post('/validateUsername', async (req, res) => {
     res.json({ response: 'Successful' });
   }
 });
+
+app.get('/profile', async (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  } else {
+    const profile = await func.fetchFromDB(
+      '*',
+      'users',
+      `name = '${req.session.user}'`
+    );
+
+    res.render('profile', { profile: profile[0] });
+  }
+});

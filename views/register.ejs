@@ -59,7 +59,7 @@
       document.querySelector('#username').addEventListener('blur', () => {
         let username = document.querySelector('#username').value;
         let username_warning = document.querySelector('#username_warning');
-        fetch('http://localhost:3000/validateUsername', {
+        fetch('/validateUsername', {
           method: 'POST',
           body: JSON.stringify({ user: username }),
           headers: {
