@@ -57,15 +57,29 @@ const fetchFromDB = async (selection, database, condition) => {
           data.forEach((element) => {
             retData.push(element);
           });
-          console.log(sql);
-          console.log(retData);
+          console.log('SQL:', sql);
+          console.log('Data:', retData);
           resolve(retData);
         }
       });
     });
   } catch (error) {
+    console.log(error);
     return false;
   }
+};
+
+const insertIntoDB = async (database, fields, values) => {
+  return new Promise((resolve, reject) => {
+    sql = `INSERT INTO ${database} (${fields}) VALUES (${values});`;
+    db.run(sql, (err, response) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(response);
+      }
+    });
+  });
 };
 
 const makeHash = (input) => {
@@ -118,4 +132,5 @@ module.exports = {
   checkIfUsernameAvailable,
   insertUser,
   fetchFromDB,
+  insertIntoDB,
 };
