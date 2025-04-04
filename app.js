@@ -122,7 +122,15 @@ app.get('/profile', async (req, res) => {
       `name = '${req.session.user}'`
     );
 
-    res.render('profile', { profile: profile[0] });
+    const listOfPosts = await func.fetchFromDB(
+      '*',
+      'posts',
+      `posted_by = '${await func.convUsername(req.session.user)}'`
+    );
+
+    console.log(await func.convUsername(req.session.user));
+
+    res.render('profile', { profile: profile[0], posts: listOfPosts });
   }
 });
 

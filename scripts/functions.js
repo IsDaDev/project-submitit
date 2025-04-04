@@ -127,10 +127,44 @@ const checkIfUsernameAvailable = async (user) => {
   return result.length;
 };
 
+const convUsername = async (user) => {
+  try {
+    return new Promise((resolve, reject) => {
+      sql = '';
+      if (typeof user === 'number') {
+        sql = `SELECT name FROM users WHERE user_id = '${user}';`;
+      } else {
+        sql = `SELECT user_id FROM users WHERE name = '${user}';`;
+      }
+
+      db.all(sql, (err, data) => {
+        console.log('sql:', sql);
+        if (err) {
+          reject(err);
+        } else {
+          console.log(typeof user);
+          switch (typeof user) {
+            case 'number':
+              resolve(data[0]['user_id']);
+              break;
+
+            default:
+              resolve(data[0]['name']);
+              break;
+          }
+        }
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   loginCheck,
   checkIfUsernameAvailable,
   insertUser,
   fetchFromDB,
   insertIntoDB,
+  convUsername,
 };
