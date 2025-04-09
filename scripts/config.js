@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   app.use(
@@ -27,6 +28,8 @@ module.exports = (app) => {
     }
     next();
   });
+
+  app.use(cookieParser());
 
   app.set('view engine', 'ejs');
 };

@@ -23,12 +23,23 @@
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
+        console.log('trying to fetch');
         fetch('/loadMorePosts', {
+          headers: {
+            'Content-type': 'application/json',
+          },
           method: 'post',
           body: {
             sub: document.querySelector('.subforum_id').innerHTML,
           },
-        });
+        })
+          .then((data) => {
+            console.log(data);
+            data = data.json();
+          })
+          .then((data) => {
+            console.log(data);
+          });
       });
     </script>
   </body>

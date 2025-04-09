@@ -8,6 +8,7 @@ dotenv.config();
 const func = require('./scripts/functions.js');
 const app = express();
 const port = process.env.PORT || 3000;
+const server = `http://localhost:${port}`;
 
 require('./scripts/config.js')(app);
 
@@ -146,6 +147,43 @@ app.get('/s/:sub', async (req, res) => {
       'posts',
       `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
     );
+
+    app.get('/s/:sub', async (req, res) => {
+      try {
+        let subforum = await func.fetchFromDB(
+          '*',
+          'subforums',
+          `name = '${req.params.sub}'`
+        );
+        let content = await func.fetchFromDB(
+          '*',
+          'posts',
+          `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
+        );
+
+        let loadedPosts = req.cookies.load;
+
+        if (loadedPosts === undefined) {
+          res.cookie('load', 5, {
+            httpOnly: false,
+            sameSite: 'lax',
+          });
+        }
+
+        if (subforum.length > 0) {
+          res.render('sub', {
+            sub: subforum[0],
+            posts: content,
+            posts_loaded: content.length,
+          });
+        }
+      } catch (err) {
+        res
+          .status(404)
+          .render('404', { errorMsg: `Sub could not be found ${err}` });
+      }
+    });
+
     if (subforum.length > 0) {
       res.render('sub', {
         sub: subforum[0],
@@ -154,13 +192,15 @@ app.get('/s/:sub', async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(404).render('404', { errorMsg: 'Sub could not be found' });
+    res
+      .status(404)
+      .render('404', { errorMsg: `Sub could not be found ${err}` });
   }
 });
 
 app.post('/loadMorePosts', (req, res) => {
   console.log(req.body);
-  res.send('hey');
+  res.json({ success: 'hey' });
 });
 
 app.get('/s/:sub/createNewPost', async (req, res) => {
@@ -223,4 +263,11 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
     console.log(err);
     res.send('You are not logged in, log in to create posts');
   }
+});
+
+app.post('/api/updateLoadedPosts', (req, res) => {
+  const currentAmount = req.cookies.load;
+
+  res.cookie('load', (currentAmount += 3), { sameSite: 'lax' });
+  res.status(200).json({ success: true });
 });
