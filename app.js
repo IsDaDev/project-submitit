@@ -1,4 +1,5 @@
 // TODO: add AGBs
+//       add create date to posts
 // ************************************
 const express = require('express');
 const dotenv = require('dotenv');
@@ -57,7 +58,10 @@ app.post('/register', async (req, res) => {
     }
   } catch (err) {
     console.error('Error while registering:', err);
-    res.status(500).send('Error while registering, try again');
+    res.status(500).render('404', {
+      errorMsg:
+        'Error while registering, try again later or contact site adminstrators',
+    });
   }
 });
 
@@ -118,33 +122,105 @@ app.get('/profile', async (req, res) => {
       `name = '${req.session.user}'`
     );
 
-    res.render('profile', { profile: profile[0] });
+    const listOfPosts = await func.fetchFromDB(
+      '*',
+      'posts',
+      `posted_by = '${await func.convUsername(req.session.user)}'`
+    );
+
+    console.log(await func.convUsername(req.session.user));
+
+    res.render('profile', { profile: profile[0], posts: listOfPosts });
   }
 });
 
 app.get('/s/:sub', async (req, res) => {
-  let subforum = await func.fetchFromDB(
-    '*',
-    'subforums',
-    `name = '${req.params.sub}'`
-  );
-  let content = await func.fetchFromDB(
-    '*',
-    'posts',
-    `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
-  );
-  if (subforum.length > 0) {
-    res.render('sub', {
-      sub: subforum[0],
-      posts: content,
-      posts_loaded: content.length,
-    });
-  } else {
-    res.send('Not available');
+  try {
+    let subforum = await func.fetchFromDB(
+      '*',
+      'subforums',
+      `name = '${req.params.sub}'`
+    );
+    let content = await func.fetchFromDB(
+      '*',
+      'posts',
+      `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
+    );
+    if (subforum.length > 0) {
+      res.render('sub', {
+        sub: subforum[0],
+        posts: content,
+        posts_loaded: content.length,
+      });
+    }
+  } catch (err) {
+    res.status(404).render('404', { errorMsg: 'Sub could not be found' });
   }
 });
 
 app.post('/loadMorePosts', (req, res) => {
   console.log(req.body);
   res.send('hey');
+});
+
+app.get('/s/:sub/createNewPost', async (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  } else {
+    try {
+      console.log(req.params.sub);
+    } catch (err) {
+      console.log(err);
+    }
+
+    res.render('newPost', { subName: req.params.sub });
+  }
+});
+
+app.get('/s/:sub/viewPost/:postID', async (req, res) => {
+  try {
+    const sub_id = await func.fetchFromDB(
+      'subforum_id',
+      'subforums',
+      `name = '${req.params.sub}'`
+    );
+
+    const postData = await func.fetchFromDB(
+      '*',
+      'posts',
+      `post_id = ${req.params.postID} AND link_to_subforum = ${sub_id[0]['subforum_id']}`
+    );
+
+    // ensures data is not empty
+    if (postData.length == 0) {
+      throw new Error('');
+    } else {
+      res.render('viewPost', { post: postData[0] });
+    }
+  } catch (err) {
+    res.status(404).render('404', { errorMsg: 'Page could not be found' });
+  }
+});
+
+app.post('/s/:sub/createNewPost', async (req, res) => {
+  try {
+    const user = await func.fetchFromDB(
+      'user_id',
+      'users',
+      `name = '${req.session.user}'`
+    );
+    const sub_id = await func.fetchFromDB(
+      'subforum_id',
+      'subforums',
+      `name = '${req.params.sub}'`
+    );
+    const insert = await func.insertIntoDB(
+      'posts',
+      'title, content, posted_by, link_to_subforum',
+      `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "${sub_id[0]['subforum_id']}"`
+    );
+  } catch (err) {
+    console.log(err);
+    res.send('You are not logged in, log in to create posts');
+  }
 });

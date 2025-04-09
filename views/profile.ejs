@@ -11,6 +11,13 @@
     <p>Bday: <%= profile['bday'] %></p>
     <p>Joined: <%= profile['acc_created'] %></p>
     <p>About: <%= profile['about'] %></p>
+
+    <% posts.forEach(element => { %>
+    <div class="post">
+      <h4><%= element['title'] %></h4>
+      <p><%= element['content'] %></p>
+    </div>
+    <% }) %>
     <button><a href="/">Go back</a></button>
   </body>
 </html>

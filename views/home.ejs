@@ -17,7 +17,9 @@
 
     <h3>List of subforums:</h3>
     <% subforumList.forEach(element => { %>
-    <h5>Subforum <%= element['name'] %></h5>
+    <h5>
+      <a href="/s/<%= element['name'] %>">Subforum <%= element['name'] %> </a>
+    </h5>
     <% }) %>
 
     <script>

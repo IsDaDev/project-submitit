@@ -17,6 +17,9 @@
     <% }) %>
 
     <button id="loadMorePosts"><a>Load more ...</a></button>
+    <button id="createNewPost">
+      <a href="/s/<%= sub['name'] %>/createNewPost">Create new post</a>
+    </button>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
@@ -24,7 +27,6 @@
           method: 'post',
           body: {
             sub: document.querySelector('.subforum_id').innerHTML,
-            hey: 'hello',
           },
         });
       });
