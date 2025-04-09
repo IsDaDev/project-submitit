@@ -9,26 +9,55 @@
     <p style="display: none" class="subforum_id"><%= sub['subforum_id'] %></p>
     <h2>Welcome to <%= sub['name'] %></h2>
 
-    <% posts.forEach(element => { %>
-    <div class="post">
-      <h4><%= element['title'] %></h4>
-      <p><%= element['content'] %></p>
+    <div id="postsContainer">
+      <% posts.forEach(element => { %>
+      <div class="post">
+        <h4><%= element['title'] %></h4>
+        <p><%= element['content'] %></p>
+      </div>
+      <% }) %>
     </div>
-    <% }) %>
 
-    <button id="loadMorePosts"><a>Load more ...</a></button>
+    <button id="loadMorePosts">Load more ...</button>
     <button id="createNewPost">
       <a href="/s/<%= sub['name'] %>/createNewPost">Create new post</a>
     </button>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
+        const subforum = document.querySelector('.subforum_id').innerHTML;
+        const startIndex = document.querySelectorAll('.post').length;
+
         fetch('/loadMorePosts', {
-          method: 'post',
-          body: {
-            sub: document.querySelector('.subforum_id').innerHTML,
-          },
-        });
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          body: JSON.stringify({
+            sub: subforum,
+            startIndex: startIndex,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.length > 0) {
+              data.forEach((post) => {
+                const postHtml = `
+                <div class="post">
+                  <h4>${post.title}</h4>
+                  <p>${post.content}</p>
+                </div>
+              `;
+                document
+                  .querySelector('#postsContainer')
+                  .insertAdjacentHTML('beforeend', postHtml);
+              });
+            } else {
+              document.querySelector('#loadMorePosts').textContent =
+                'No more posts to load';
+            }
+          })
+          .catch((err) => {
+            console.error('Error loading posts:', err);
+          });
       });
     </script>
   </body>

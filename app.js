@@ -144,7 +144,7 @@ app.get('/s/:sub', async (req, res) => {
     let content = await func.fetchFromDB(
       '*',
       'posts',
-      `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
+      `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 10`
     );
     if (subforum.length > 0) {
       res.render('sub', {
@@ -158,9 +158,17 @@ app.get('/s/:sub', async (req, res) => {
   }
 });
 
-app.post('/loadMorePosts', (req, res) => {
-  console.log(req.body);
-  res.send('hey');
+app.post('/loadMorePosts', async (req, res) => {
+  const sub = req.body.sub;
+  const index = req.body.startIndex || 0;
+
+  let newContent = await func.fetchFromDB(
+    '*',
+    'posts',
+    `link_to_subforum = '${sub}' LIMIT 10 OFFSET ${index}`
+  );
+
+  res.json(newContent);
 });
 
 app.get('/s/:sub/createNewPost', async (req, res) => {
@@ -204,6 +212,8 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
 
 app.post('/s/:sub/createNewPost', async (req, res) => {
   try {
+    const nonce = Math.floor(Math.random() * 100);
+
     const user = await func.fetchFromDB(
       'user_id',
       'users',
@@ -214,11 +224,22 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
       'subforums',
       `name = '${req.params.sub}'`
     );
+
     const insert = await func.insertIntoDB(
       'posts',
       'title, content, posted_by, link_to_subforum',
       `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "${sub_id[0]['subforum_id']}"`
     );
+
+    const post_num = await func.fetchFromDB(
+      'post_id',
+      'posts',
+      `title = '${req.body.title}' AND posted_by = '${user[0].user_id}'`
+    );
+
+    let buildUp = `http://localhost:3000/s/${req.params.sub}/viewPost/${post_num[0]['post_id']}_${nonce}`;
+
+    res.status(200).redirect(buildUp);
   } catch (err) {
     console.log(err);
     res.send('You are not logged in, log in to create posts');
