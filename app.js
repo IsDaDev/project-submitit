@@ -199,21 +199,30 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
       `post_id = ${req.params.postID} AND link_to_subforum = ${sub_id[0]['subforum_id']}`
     );
 
+    const posted_by = await func.fetchFromDB(
+      'name',
+      'users',
+      `user_id = '${postData[0]['posted_by']}'`
+    );
+
     // ensures data is not empty
     if (postData.length == 0) {
       throw new Error('');
     } else {
-      res.render('viewPost', { post: postData[0] });
+      res.render('viewPost', {
+        post: postData[0],
+        poster: posted_by[0]['name'],
+      });
     }
   } catch (err) {
-    res.status(404).render('404', { errorMsg: 'Page could not be found' });
+    res
+      .status(404)
+      .render('404', { errorMsg: 'The page you requested does not exist' });
   }
 });
 
 app.post('/s/:sub/createNewPost', async (req, res) => {
   try {
-    const nonce = Math.floor(Math.random() * 100);
-
     const user = await func.fetchFromDB(
       'user_id',
       'users',
@@ -237,7 +246,7 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
       `title = '${req.body.title}' AND posted_by = '${user[0].user_id}'`
     );
 
-    let buildUp = `http://localhost:3000/s/${req.params.sub}/viewPost/${post_num[0]['post_id']}_${nonce}`;
+    let buildUp = `http://localhost:3000/s/${req.params.sub}/viewPost/${post_num[0]['post_id']}`;
 
     res.status(200).redirect(buildUp);
   } catch (err) {

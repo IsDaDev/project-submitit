@@ -12,7 +12,11 @@
     <div id="postsContainer">
       <% posts.forEach(element => { %>
       <div class="post">
-        <h4><%= element['title'] %></h4>
+        <h4>
+          <a href="/s/<%= sub['name'] %>/viewPost/<%= element['post_id'] %>"
+            ><%= element['title'] %></a
+          >
+        </h4>
         <p><%= element['content'] %></p>
       </div>
       <% }) %>
