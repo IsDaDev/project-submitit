@@ -13,7 +13,7 @@
     <button id="back_button">Go back</button>
     <script>
       document.querySelector('#back_button').addEventListener('click', () => {
-        window.history.go(-2);
+        window.location.href = '/s/' + window.location.pathname.split('/')[2];
       });
     </script>
   </body>

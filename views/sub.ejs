@@ -26,6 +26,7 @@
     <button id="createNewPost">
       <a href="/s/<%= sub['name'] %>/createNewPost">Create new post</a>
     </button>
+    <button id="goBack"><a href="/">Go back</a></button>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
@@ -44,9 +45,10 @@
           .then((data) => {
             if (data.length > 0) {
               data.forEach((post) => {
+                const path = `/s/<%= sub['name'] %>/viewPost/${post.post_id}`;
                 const postHtml = `
                 <div class="post">
-                  <h4>${post.title}</h4>
+                  <h4><a href='${path}'>${post.title}</a></h4>
                   <p>${post.content}</p>
                 </div>
               `;

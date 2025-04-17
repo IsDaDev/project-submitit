@@ -31,7 +31,7 @@ app.get('/register', (req, res) => {
 
 app.get('/login', (req, res) => {
   if (req.session.user) {
-    return res.redirect('/');
+    res.render('/');
   } else {
     res.render('login');
   }
@@ -71,9 +71,13 @@ app.post('/login', async (req, res) => {
 
   if (await func.loginCheck(username, password)) {
     req.session.user = username;
-    return res.redirect('/');
+
+    const redirectTo = req.session.redirectTo || '/';
+    req.session.redirectTo = null;
+
+    return res.redirect(redirectTo);
   } else {
-    res.send('invalid credentials');
+    res.send('Invalid credentials');
   }
 });
 
@@ -173,14 +177,9 @@ app.post('/loadMorePosts', async (req, res) => {
 
 app.get('/s/:sub/createNewPost', async (req, res) => {
   if (!req.session.user) {
+    res.cookie('redirect', `/s/${req.params.sub}/createNewPost`);
     return res.redirect('/login');
   } else {
-    try {
-      console.log(req.params.sub);
-    } catch (err) {
-      console.log(err);
-    }
-
     res.render('newPost', { subName: req.params.sub });
   }
 });
@@ -204,6 +203,8 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
       'users',
       `user_id = '${postData[0]['posted_by']}'`
     );
+
+    req.session.returnTo = `/s/${req.params.sub}`;
 
     // ensures data is not empty
     if (postData.length == 0) {
@@ -234,11 +235,13 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
       `name = '${req.params.sub}'`
     );
 
-    const insert = await func.insertIntoDB(
+    await func.insertIntoDB(
       'posts',
       'title, content, posted_by, link_to_subforum',
       `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "${sub_id[0]['subforum_id']}"`
     );
+
+    await func.modifyUser(user[0].user_id, 'posts_count', 'posts_count + 1');
 
     const post_num = await func.fetchFromDB(
       'post_id',

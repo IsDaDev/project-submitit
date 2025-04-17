@@ -160,6 +160,24 @@ const convUsername = async (user) => {
   }
 };
 
+const modifyUser = async (user, field, newValue) => {
+  try {
+    return new Promise((resolve, reject) => {
+      sql = `UPDATE users SET ${field} = ${newValue} WHERE user_id = ${user}`;
+
+      db.all(sql, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve('Success');
+        }
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   loginCheck,
   checkIfUsernameAvailable,
@@ -167,4 +185,5 @@ module.exports = {
   fetchFromDB,
   insertIntoDB,
   convUsername,
+  modifyUser,
 };

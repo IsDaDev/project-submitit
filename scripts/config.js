@@ -27,6 +27,17 @@ module.exports = (app) => {
     }
     next();
   });
+  app.use((req, res, next) => {
+    if (
+      !req.session.user &&
+      req.originalUrl !== '/login' &&
+      !req.originalUrl.startsWith('/register')
+    ) {
+      req.session.redirectTo = req.originalUrl;
+      return res.redirect('/login');
+    }
+    next();
+  });
 
   app.set('view engine', 'ejs');
 };
