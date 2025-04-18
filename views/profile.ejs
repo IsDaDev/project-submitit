@@ -9,8 +9,9 @@
     <h1>Profile of <%= profile['name'] %></h1>
     <p>Posts: <%= profile['posts_count'] %></p>
     <p>Bday: <%= profile['bday'] %></p>
-    <p>Joined: <%= profile['acc_created'] %></p>
-    <p>About: <%= profile['about'] %></p>
+    <p>Profile created: <%= profile['acc_created'] %></p>
+
+    <h3>Posts:</h3>
 
     <% posts.forEach(element => { %>
     <div class="post">

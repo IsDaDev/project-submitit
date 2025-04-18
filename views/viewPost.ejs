@@ -10,6 +10,7 @@
     <h3><%= post['title'] %></h3>
     <h3><%= post['content'] %></h3>
     <p>Posted by <%= poster %></p>
+    <p>- <%= post['posted_date'] %></p>
     <button id="back_button">Go back</button>
     <script>
       document.querySelector('#back_button').addEventListener('click', () => {

@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const func = require('./scripts/functions.js');
+const userf = require('./scripts/user.js');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -49,7 +50,7 @@ app.post('/register', async (req, res) => {
     );
 
     if (re.test(username) && passwordRe.test(password)) {
-      await func.insertUser(username, password, bday);
+      await userf.insertUser(username, password, bday);
 
       req.session.user = username;
       res.redirect('/');
@@ -69,7 +70,7 @@ app.post('/login', async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
-  if (await func.loginCheck(username, password)) {
+  if (await userf.loginCheck(username, password)) {
     req.session.user = username;
 
     const redirectTo = req.session.redirectTo || '/';
@@ -105,7 +106,7 @@ app.post('/validateUsername', async (req, res) => {
 
   const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
 
-  let isValidUser = await func.checkIfUsernameAvailable(req.body.user);
+  let isValidUser = await userf.checkIfUsernameAvailable(req.body.user);
 
   if (re.test(username) === false) {
     res.json({ response: 'Invalid username' });
@@ -129,10 +130,10 @@ app.get('/profile', async (req, res) => {
     const listOfPosts = await func.fetchFromDB(
       '*',
       'posts',
-      `posted_by = '${await func.convUsername(req.session.user)}'`
+      `posted_by = '${await userf.convUsername(req.session.user)}'`
     );
 
-    console.log(await func.convUsername(req.session.user));
+    console.log(await userf.convUsername(req.session.user));
 
     res.render('profile', { profile: profile[0], posts: listOfPosts });
   }
@@ -237,11 +238,12 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
 
     await func.insertIntoDB(
       'posts',
-      'title, content, posted_by, link_to_subforum',
-      `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "${sub_id[0]['subforum_id']}"`
+      'title, content, posted_by, link_to_subforum, posted_date',
+      `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "
+      ${sub_id[0]['subforum_id']}", "${func.getFormattedDate()}"`
     );
 
-    await func.modifyUser(user[0].user_id, 'posts_count', 'posts_count + 1');
+    await userf.modifyUser(user[0].user_id, 'posts_count', 'posts_count + 1');
 
     const post_num = await func.fetchFromDB(
       'post_id',
