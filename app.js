@@ -1,5 +1,4 @@
 // TODO: add AGBs
-//       add create date to posts
 // ************************************
 const express = require('express');
 const dotenv = require('dotenv');
@@ -19,7 +18,6 @@ app.listen(port, () => {
 app.get('/', async (req, res) => {
   let userStatus = false;
   let subforumList = await func.fetchFromDB('*', 'subforums', '');
-  console.log(subforumList);
   if (req.session.user) {
     userStatus = true;
   }

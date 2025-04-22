@@ -59,12 +59,11 @@
       document.querySelector('#username').addEventListener('blur', () => {
         let username = document.querySelector('#username').value;
         let username_warning = document.querySelector('#username_warning');
+
         fetch('/validateUsername', {
+          headers: { 'Content-Type': 'application/json' },
           method: 'POST',
           body: JSON.stringify({ user: username }),
-          headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-          },
         })
           .then((response) => response.json())
           .then((data) => {
@@ -73,6 +72,9 @@
             } else {
               username_warning.style.display = 'none';
             }
+          })
+          .catch((error) => {
+            console.error('Error validating username:', error);
           });
       });
 
@@ -82,14 +84,18 @@
         let pass2 = document.querySelector('#re_password').value;
         let password_warning = document.querySelector('#password_warning');
 
-        if (pass1 !== pass2) {
-          showWarning('Passwords do not match!', password_warning);
+        if (pass1.length < 8 || pass1.length > 100) {
+          showWarning(
+            'Password must be between 8 and 100 characters!',
+            password_warning
+          );
         } else {
           password_warning.style.display = 'none';
         }
 
-        if (pass1.length < 8 || pass1.length > 100) {
-          showWarning('Passwordslength is incorrect!', password_warning);
+        if (pass1 !== pass2) {
+          showWarning('Passwords do not match!', password_warning);
+          console.log(pass1);
         } else {
           password_warning.style.display = 'none';
         }

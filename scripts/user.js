@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3');
 const path = require('path');
+const funcs = require('./functions.js');
 
 const filePath = path.join(__dirname, '..', 'data.db');
 
@@ -66,7 +67,7 @@ const loginCheck = async (user, password) => {
 };
 
 const checkIfUsernameAvailable = async (user) => {
-  let result = await fetchFromDB('*', 'users', `name = '${user}'`);
+  let result = await funcs.fetchFromDB('*', 'users', `name = '${user}'`);
 
   return result.length;
 };

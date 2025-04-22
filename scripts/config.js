@@ -19,6 +19,7 @@ module.exports = (app) => {
   );
 
   app.use(bodyParser.json());
+  app.use(express.json());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use((req, res, next) => {
     if (req.path.length > 1 && req.path.endsWith('/')) {
@@ -31,7 +32,9 @@ module.exports = (app) => {
     if (
       !req.session.user &&
       req.originalUrl !== '/login' &&
-      !req.originalUrl.startsWith('/register')
+      req.originalUrl !== '/' &&
+      !req.originalUrl.startsWith('/register') &&
+      req.originalUrl !== '/validateUsername'
     ) {
       req.session.redirectTo = req.originalUrl;
       return res.redirect('/login');
