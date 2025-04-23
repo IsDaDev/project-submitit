@@ -35,7 +35,7 @@ const insertUser = async (username, password, bday) => {
   return new Promise((resolve, reject) => {
     db.run(
       'INSERT INTO users (name, password, bday, acc_created) VALUES (?, ?, ?, ?)',
-      [username, makeHash(password), bday, getFormattedDate()],
+      [username, makeHash(password), bday, funcs.getFormattedDate()],
       (err, ret) => {
         if (err) {
           reject(err);

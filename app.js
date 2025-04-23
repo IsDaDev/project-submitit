@@ -44,7 +44,8 @@ app.post('/register', async (req, res) => {
 
     const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
     const passwordRe = new RegExp(
-      `^(?!.*(--|;|'|"|/\*|\*/|union|select|insert|update|delete|drop|xp_))[\w!@#$%^&*()-+=]{8,64}$`
+      '^(?!.*(--|;|\'|"|\\/\\*|\\*\\/|union|select|insert|update|delete|drop|xp_))' +
+        '[\\w!@#$%^&*()\\-+=]{8,64}$'
     );
 
     if (re.test(username) && passwordRe.test(password)) {

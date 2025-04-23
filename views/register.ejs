@@ -50,9 +50,9 @@
       const showWarning = (text, warning_element) => {
         warning_element.style.display = 'block';
         warning_element.innerHTML = text;
-        document.querySelector('form').addEventListener('submit', (e) => {
-          e.preventDefault();
-        });
+        // document.querySelector('form').addEventListener('submit', (e) => {
+        //   e.preventDefault();
+        // });
       };
 
       // validate username
@@ -78,12 +78,12 @@
           });
       });
 
-      // validate that passwords match
       document.querySelector('#re_password').addEventListener('blur', () => {
         let pass1 = document.querySelector('#password').value;
         let pass2 = document.querySelector('#re_password').value;
         let password_warning = document.querySelector('#password_warning');
 
+        // passwordvalidation length
         if (pass1.length < 8 || pass1.length > 100) {
           showWarning(
             'Password must be between 8 and 100 characters!',
@@ -93,6 +93,7 @@
           password_warning.style.display = 'none';
         }
 
+        // passwordvalidation match
         if (pass1 !== pass2) {
           showWarning('Passwords do not match!', password_warning);
         } else {
