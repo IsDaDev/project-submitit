@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
 const express = require('express');
+const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
   app.set('view engine', 'ejs');
@@ -30,6 +31,10 @@ module.exports = (app) => {
     }
     next();
   });
+
+  app.use(cookieParser());
+
+  app.set('view engine', 'ejs');
   app.use((req, res, next) => {
     if (
       !req.session.user &&
