@@ -4,6 +4,8 @@ const session = require('express-session');
 const express = require('express');
 
 module.exports = (app) => {
+  app.set('view engine', 'ejs');
+  app.use(express.static('public'));
   app.use(
     bodyParser.urlencoded({
       extended: true,
@@ -35,6 +37,7 @@ module.exports = (app) => {
       req.originalUrl !== '/' &&
       req.originalUrl !== '/validateUsername' &&
       req.originalUrl !== '/loadMorePosts' &&
+      !req.originalUrl.startsWith('/public') &&
       !req.originalUrl.startsWith('/s/') &&
       !req.originalUrl.startsWith('/register')
     ) {
@@ -43,7 +46,4 @@ module.exports = (app) => {
     }
     next();
   });
-
-  app.set('view engine', 'ejs');
-  app.use(express.static(path.join(__dirname, 'public')));
 };

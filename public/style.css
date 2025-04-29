@@ -1,0 +1,13 @@
+body {
+    background-color: rgb(115, 115, 115)
+};
+
+#password_warning,
+#username_warning {
+  display: none;
+  color: red;
+}
+
+#form {
+    background-color: aqua;
+}

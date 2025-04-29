@@ -4,16 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register</title>
-    <style>
-      #password_warning,
-      #username_warning {
-        display: none;
-        color: red;
-      }
-    </style>
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
-    <form action="/register" method="POST">
+    <form action="/register" method="POST" id="form">
       <label for="username">Username: </label>
       <input type="text" name="username" id="username" class="register_input" />
       <p id="username_warning"></p>
