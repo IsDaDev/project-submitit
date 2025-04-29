@@ -275,3 +275,7 @@ app.post('/post/delete', async (req, res) => {
     res.status(403).json({ error: 'Not authorized' });
   }
 });
+
+app.get('/admin/dashboard', (req, res) => {
+  res.render('dashboard');
+});
