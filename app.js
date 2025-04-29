@@ -206,13 +206,15 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
 
     req.session.returnTo = `/s/${req.params.sub}`;
 
-    // ensures data is not empty
     if (postData.length == 0) {
+      // ensures data is not empty
       throw new Error('');
     } else {
       res.render('viewPost', {
         post: postData[0],
         poster: posted_by[0]['name'],
+        viewer: req.session.user,
+        suborum: req.params.sub,
       });
     }
   } catch (err) {
@@ -256,5 +258,20 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
   } catch (err) {
     console.log(err);
     res.send('You are not logged in, log in to create posts');
+  }
+});
+
+app.post('/post/delete', async (req, res) => {
+  try {
+    if (req.session.user == req.body.posted_by) {
+      const deletion = func.deletePost(req.body.post_id);
+      const redirect_link = '/s/' + req.body.path;
+      res.status(200).json({ redirect: redirect_link });
+    } else {
+      throw new Error('Not authorized to delete');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(403).json({ error: 'Not authorized' });
   }
 });

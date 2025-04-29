@@ -34,6 +34,8 @@ module.exports = (app) => {
       req.originalUrl !== '/login' &&
       req.originalUrl !== '/' &&
       req.originalUrl !== '/validateUsername' &&
+      req.originalUrl !== '/loadMorePosts' &&
+      !req.originalUrl.startsWith('/s/') &&
       !req.originalUrl.startsWith('/register')
     ) {
       req.session.redirectTo = req.originalUrl;

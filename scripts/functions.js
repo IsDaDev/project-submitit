@@ -63,8 +63,22 @@ const insertIntoDB = async (database, fields, values) => {
   });
 };
 
+const deletePost = async (id) => {
+  return new Promise((resolve, reject) => {
+    sql = `DELETE FROM posts WHERE post_id = ${id}`;
+    db.run(sql, (err, respo) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(respo);
+      }
+    });
+  });
+};
+
 module.exports = {
   fetchFromDB,
+  deletePost,
   insertIntoDB,
   getFormattedDate,
 };

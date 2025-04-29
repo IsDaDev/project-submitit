@@ -11,8 +11,40 @@
     <h3><%= post['content'] %></h3>
     <p>Posted by <%= poster %></p>
     <p>- <%= post['posted_date'] %></p>
+    <% if (viewer === poster) { %>
+    <button id="delete_button">Delete Post</button>
+    <% } %>
     <button id="back_button">Go back</button>
     <script>
+      const delete_button = document.querySelector('#delete_button');
+
+      if (delete_button) {
+        delete_button.addEventListener('click', () => {
+          fetch('/post/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              post_id: '<%= post["post_id"] %>',
+              posted_by: '<%= poster %>',
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.redirect) {
+                window.location.href =
+                  '/s/' + window.location.pathname.split('/')[2];
+              } else if (data.error) {
+                alert(data.error);
+              }
+            })
+            .catch((err) => {
+              console.error('Delete failed:', err);
+              alert('An error occurred while deleting the post.');
+            });
+        });
+      }
+
       document.querySelector('#back_button').addEventListener('click', () => {
         window.location.href = '/s/' + window.location.pathname.split('/')[2];
       });
