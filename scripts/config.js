@@ -5,6 +5,8 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 
 module.exports = (app) => {
+  app.set('view engine', 'ejs');
+  app.use(express.static('public'));
   app.use(
     bodyParser.urlencoded({
       extended: true,
@@ -28,8 +30,26 @@ module.exports = (app) => {
     }
     next();
   });
+<<<<<<< Updated upstream
 
   app.use(cookieParser());
 
   app.set('view engine', 'ejs');
+=======
+  app.use((req, res, next) => {
+    if (
+      !req.session.user &&
+      req.originalUrl !== '/login' &&
+      req.originalUrl !== '/' &&
+      req.originalUrl !== '/validateUsername' &&
+      req.originalUrl !== '/loadMorePosts' &&
+      !req.originalUrl.startsWith('/s/') &&
+      !req.originalUrl.startsWith('/register')
+    ) {
+      req.session.redirectTo = req.originalUrl;
+      return res.redirect('/login');
+    }
+    next();
+  });
+>>>>>>> Stashed changes
 };

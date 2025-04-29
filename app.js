@@ -268,6 +268,25 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
 app.post('/api/updateLoadedPosts', (req, res) => {
   const currentAmount = req.cookies.load;
 
+<<<<<<< Updated upstream
   res.cookie('load', (currentAmount += 3), { sameSite: 'lax' });
   res.status(200).json({ success: true });
+=======
+app.get('/admin/dashboard', async (req, res) => {
+  const validationUser = await func.fetchFromDB(
+    'role',
+    'users',
+    `name = '${req.session.user}'`
+  );
+
+  if (validationUser[0]['role'] == 'admin') {
+    const users = await func.fetchFromDB('*', 'users', '');
+    const posts = await func.fetchFromDB('*', 'posts', '');
+    const subs = await func.fetchFromDB('*', 'subforums', '');
+
+    res.render('dashboard', { users, posts, subs });
+  } else {
+    res.send('Unauthorized');
+  }
+>>>>>>> Stashed changes
 });
