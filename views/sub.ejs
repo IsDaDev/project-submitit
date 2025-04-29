@@ -4,41 +4,67 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= sub['name'] %></title>
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
     <p style="display: none" class="subforum_id"><%= sub['subforum_id'] %></p>
     <h2>Welcome to <%= sub['name'] %></h2>
 
-    <% posts.forEach(element => { %>
-    <div class="post">
-      <h4><%= element['title'] %></h4>
-      <p><%= element['content'] %></p>
+    <div id="postsContainer">
+      <% posts.forEach(element => { %>
+      <div class="post">
+        <h4>
+          <a href="/s/<%= sub['name'] %>/viewPost/<%= element['post_id'] %>"
+            ><%= element['title'] %></a
+          >
+        </h4>
+        <p><%= element['content'] %></p>
+      </div>
+      <% }) %>
     </div>
-    <% }) %>
 
-    <button id="loadMorePosts"><a>Load more ...</a></button>
+    <button id="loadMorePosts">Load more ...</button>
     <button id="createNewPost">
       <a href="/s/<%= sub['name'] %>/createNewPost">Create new post</a>
     </button>
+    <button id="goBack"><a href="/">Go back</a></button>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
-        console.log('trying to fetch');
+
+        const subforum = document.querySelector('.subforum_id').innerHTML;
+        const startIndex = document.querySelectorAll('.post').length;
+
         fetch('/loadMorePosts', {
-          headers: {
-            'Content-type': 'application/json',
-          },
-          method: 'post',
-          body: {
-            sub: document.querySelector('.subforum_id').innerHTML,
-          },
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          body: JSON.stringify({
+            sub: subforum,
+            startIndex: startIndex,
+          }),
         })
+          .then((res) => res.json())
           .then((data) => {
-            console.log(data);
-            data = data.json();
+            if (data.length > 0) {
+              data.forEach((post) => {
+                const path = `/s/<%= sub['name'] %>/viewPost/${post.post_id}`;
+                const postHtml = `
+                <div class="post">
+                  <h4><a href='${path}'>${post.title}</a></h4>
+                  <p>${post.content}</p>
+                </div>
+              `;
+                document
+                  .querySelector('#postsContainer')
+                  .insertAdjacentHTML('beforeend', postHtml);
+              });
+            } else {
+              document.querySelector('#loadMorePosts').textContent =
+                'No more posts to load';
+            }
           })
-          .then((data) => {
-            console.log(data);
+          .catch((err) => {
+            console.error('Error loading posts:', err);
           });
       });
     </script>

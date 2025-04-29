@@ -1,11 +1,11 @@
 // TODO: add AGBs
-//       add create date to posts
 // ************************************
 const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
 
 const func = require('./scripts/functions.js');
+const userf = require('./scripts/user.js');
 const app = express();
 const port = process.env.PORT || 3000;
 const server = `http://localhost:${port}`;
@@ -19,7 +19,6 @@ app.listen(port, () => {
 app.get('/', async (req, res) => {
   let userStatus = false;
   let subforumList = await func.fetchFromDB('*', 'subforums', '');
-  console.log(subforumList);
   if (req.session.user) {
     userStatus = true;
   }
@@ -32,7 +31,7 @@ app.get('/register', (req, res) => {
 
 app.get('/login', (req, res) => {
   if (req.session.user) {
-    return res.redirect('/');
+    res.render('/');
   } else {
     res.render('login');
   }
@@ -46,11 +45,12 @@ app.post('/register', async (req, res) => {
 
     const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
     const passwordRe = new RegExp(
-      `^(?!.*(--|;|'|"|/\*|\*/|union|select|insert|update|delete|drop|xp_))[\w!@#$%^&*()-+=]{8,64}$`
+      '^(?!.*(--|;|\'|"|\\/\\*|\\*\\/|union|select|insert|update|delete|drop|xp_))' +
+        '[\\w!@#$%^&*()\\-+=]{8,64}$'
     );
 
     if (re.test(username) && passwordRe.test(password)) {
-      await func.insertUser(username, password, bday);
+      await userf.insertUser(username, password, bday);
 
       req.session.user = username;
       res.redirect('/');
@@ -70,11 +70,15 @@ app.post('/login', async (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
 
-  if (await func.loginCheck(username, password)) {
+  if (await userf.loginCheck(username, password)) {
     req.session.user = username;
-    return res.redirect('/');
+
+    const redirectTo = req.session.redirectTo || '/';
+    req.session.redirectTo = null;
+
+    return res.redirect(redirectTo);
   } else {
-    res.send('invalid credentials');
+    res.send('Invalid credentials');
   }
 });
 
@@ -102,7 +106,7 @@ app.post('/validateUsername', async (req, res) => {
 
   const re = new RegExp('^[a-zA-Z0-9_.]{1,50}$');
 
-  let isValidUser = await func.checkIfUsernameAvailable(req.body.user);
+  let isValidUser = await userf.checkIfUsernameAvailable(req.body.user);
 
   if (re.test(username) === false) {
     res.json({ response: 'Invalid username' });
@@ -126,10 +130,10 @@ app.get('/profile', async (req, res) => {
     const listOfPosts = await func.fetchFromDB(
       '*',
       'posts',
-      `posted_by = '${await func.convUsername(req.session.user)}'`
+      `posted_by = '${await userf.convUsername(req.session.user)}'`
     );
 
-    console.log(await func.convUsername(req.session.user));
+    console.log(await userf.convUsername(req.session.user));
 
     res.render('profile', { profile: profile[0], posts: listOfPosts });
   }
@@ -145,7 +149,7 @@ app.get('/s/:sub', async (req, res) => {
     let content = await func.fetchFromDB(
       '*',
       'posts',
-      `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 3`
+      `link_to_subforum = '${subforum[0]['subforum_id']}' LIMIT 10`
     );
 
     app.get('/s/:sub', async (req, res) => {
@@ -198,21 +202,24 @@ app.get('/s/:sub', async (req, res) => {
   }
 });
 
-app.post('/loadMorePosts', (req, res) => {
-  console.log(req.body);
-  res.json({ success: 'hey' });
+app.post('/loadMorePosts', async (req, res) => {
+  const sub = req.body.sub;
+  const index = req.body.startIndex || 0;
+
+  let newContent = await func.fetchFromDB(
+    '*',
+    'posts',
+    `link_to_subforum = '${sub}' LIMIT 10 OFFSET ${index}`
+  );
+
+  res.json(newContent);
 });
 
 app.get('/s/:sub/createNewPost', async (req, res) => {
   if (!req.session.user) {
+    res.cookie('redirect', `/s/${req.params.sub}/createNewPost`);
     return res.redirect('/login');
   } else {
-    try {
-      console.log(req.params.sub);
-    } catch (err) {
-      console.log(err);
-    }
-
     res.render('newPost', { subName: req.params.sub });
   }
 });
@@ -231,14 +238,29 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
       `post_id = ${req.params.postID} AND link_to_subforum = ${sub_id[0]['subforum_id']}`
     );
 
-    // ensures data is not empty
+    const posted_by = await func.fetchFromDB(
+      'name',
+      'users',
+      `user_id = '${postData[0]['posted_by']}'`
+    );
+
+    req.session.returnTo = `/s/${req.params.sub}`;
+
     if (postData.length == 0) {
+      // ensures data is not empty
       throw new Error('');
     } else {
-      res.render('viewPost', { post: postData[0] });
+      res.render('viewPost', {
+        post: postData[0],
+        poster: posted_by[0]['name'],
+        viewer: req.session.user,
+        suborum: req.params.sub,
+      });
     }
   } catch (err) {
-    res.status(404).render('404', { errorMsg: 'Page could not be found' });
+    res
+      .status(404)
+      .render('404', { errorMsg: 'The page you requested does not exist' });
   }
 });
 
@@ -254,11 +276,25 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
       'subforums',
       `name = '${req.params.sub}'`
     );
-    const insert = await func.insertIntoDB(
+
+    await func.insertIntoDB(
       'posts',
-      'title, content, posted_by, link_to_subforum',
-      `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "${sub_id[0]['subforum_id']}"`
+      'title, content, posted_by, link_to_subforum, posted_date',
+      `"${req.body.title}", "${req.body.content}" , "${user[0]['user_id']}", "
+      ${sub_id[0]['subforum_id']}", "${func.getFormattedDate()}"`
     );
+
+    await userf.modifyUser(user[0].user_id, 'posts_count', 'posts_count + 1');
+
+    const post_num = await func.fetchFromDB(
+      'post_id',
+      'posts',
+      `title = '${req.body.title}' AND posted_by = '${user[0].user_id}'`
+    );
+
+    let buildUp = `http://localhost:3000/s/${req.params.sub}/viewPost/${post_num[0]['post_id']}`;
+
+    res.status(200).redirect(buildUp);
   } catch (err) {
     console.log(err);
     res.send('You are not logged in, log in to create posts');
@@ -268,11 +304,12 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
 app.post('/api/updateLoadedPosts', (req, res) => {
   const currentAmount = req.cookies.load;
 
-<<<<<<< Updated upstream
   res.cookie('load', (currentAmount += 3), { sameSite: 'lax' });
   res.status(200).json({ success: true });
-=======
-app.get('/admin/dashboard', async (req, res) => {
+
+}
+  
+  app.get('/admin/dashboard', async (req, res) => {
   const validationUser = await func.fetchFromDB(
     'role',
     'users',
@@ -288,5 +325,22 @@ app.get('/admin/dashboard', async (req, res) => {
   } else {
     res.send('Unauthorized');
   }
->>>>>>> Stashed changes
+
+app.post('/post/delete', async (req, res) => {
+  try {
+    if (req.session.user == req.body.posted_by) {
+      const deletion = func.deletePost(req.body.post_id);
+      const redirect_link = '/s/' + req.body.path;
+      res.status(200).json({ redirect: redirect_link });
+    } else {
+      throw new Error('Not authorized to delete');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(403).json({ error: 'Not authorized' });
+  }
+});
+
+app.get('/admin/dashboard', (req, res) => {
+  res.render('dashboard');
 });

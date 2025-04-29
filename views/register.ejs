@@ -4,16 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register</title>
-    <style>
-      #password_warning,
-      #username_warning {
-        display: none;
-        color: red;
-      }
-    </style>
+    <link rel="stylesheet" href="/style.css">
   </head>
   <body>
-    <form action="/register" method="POST">
+    <form action="/register" method="POST" id="form">
       <label for="username">Username: </label>
       <input type="text" name="username" id="username" class="register_input" />
       <p id="username_warning"></p>
@@ -50,21 +44,20 @@
       const showWarning = (text, warning_element) => {
         warning_element.style.display = 'block';
         warning_element.innerHTML = text;
-        document.querySelector('form').addEventListener('submit', (e) => {
-          e.preventDefault();
-        });
+        // document.querySelector('form').addEventListener('submit', (e) => {
+        //   e.preventDefault();
+        // });
       };
 
       // validate username
       document.querySelector('#username').addEventListener('blur', () => {
         let username = document.querySelector('#username').value;
         let username_warning = document.querySelector('#username_warning');
+
         fetch('/validateUsername', {
+          headers: { 'Content-Type': 'application/json' },
           method: 'POST',
           body: JSON.stringify({ user: username }),
-          headers: {
-            'Content-type': 'application/json; charset=UTF-8',
-          },
         })
           .then((response) => response.json())
           .then((data) => {
@@ -73,23 +66,30 @@
             } else {
               username_warning.style.display = 'none';
             }
+          })
+          .catch((error) => {
+            console.error('Error validating username:', error);
           });
       });
 
-      // validate that passwords match
       document.querySelector('#re_password').addEventListener('blur', () => {
         let pass1 = document.querySelector('#password').value;
         let pass2 = document.querySelector('#re_password').value;
         let password_warning = document.querySelector('#password_warning');
 
-        if (pass1 !== pass2) {
-          showWarning('Passwords do not match!', password_warning);
+        // passwordvalidation length
+        if (pass1.length < 8 || pass1.length > 100) {
+          showWarning(
+            'Password must be between 8 and 100 characters!',
+            password_warning
+          );
         } else {
           password_warning.style.display = 'none';
         }
 
-        if (pass1.length < 8 || pass1.length > 100) {
-          showWarning('Passwordslength is incorrect!', password_warning);
+        // passwordvalidation match
+        if (pass1 !== pass2) {
+          showWarning('Passwords do not match!', password_warning);
         } else {
           password_warning.style.display = 'none';
         }

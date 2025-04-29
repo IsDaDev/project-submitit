@@ -22,6 +22,7 @@ module.exports = (app) => {
   );
 
   app.use(bodyParser.json());
+  app.use(express.json());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use((req, res, next) => {
     if (req.path.length > 1 && req.path.endsWith('/')) {
@@ -30,12 +31,10 @@ module.exports = (app) => {
     }
     next();
   });
-<<<<<<< Updated upstream
 
   app.use(cookieParser());
 
   app.set('view engine', 'ejs');
-=======
   app.use((req, res, next) => {
     if (
       !req.session.user &&
@@ -43,6 +42,7 @@ module.exports = (app) => {
       req.originalUrl !== '/' &&
       req.originalUrl !== '/validateUsername' &&
       req.originalUrl !== '/loadMorePosts' &&
+      !req.originalUrl.startsWith('/public') &&
       !req.originalUrl.startsWith('/s/') &&
       !req.originalUrl.startsWith('/register')
     ) {
@@ -51,5 +51,4 @@ module.exports = (app) => {
     }
     next();
   });
->>>>>>> Stashed changes
 };
