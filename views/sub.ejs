@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= sub['name'] %></title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <p style="display: none" class="subforum_id"><%= sub['subforum_id'] %></p>
@@ -14,24 +14,26 @@
       <% posts.forEach(element => { %>
       <div class="post">
         <h4>
-          <a href="/s/<%= sub['name'] %>/viewPost/<%= element['post_id'] %>"
+          <a href="/s/<%= sub['name'] %>/view/<%= element['post_id'] %>"
             ><%= element['title'] %></a
           >
         </h4>
-        <p><%= element['content'] %></p>
+        <p>
+          <%= element['content'].slice(0, 50) %> <% if
+          (element['content'].length > 50) { %> ... <% } %>
+        </p>
       </div>
       <% }) %>
     </div>
 
     <button id="loadMorePosts">Load more ...</button>
-    <button id="createNewPost">
-      <a href="/s/<%= sub['name'] %>/createNewPost">Create new post</a>
+    <button id="createNew">
+      <a href="/s/<%= sub['name'] %>/createNew">Create new post</a>
     </button>
     <button id="goBack"><a href="/">Go back</a></button>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
-
         const subforum = document.querySelector('.subforum_id').innerHTML;
         const startIndex = document.querySelectorAll('.post').length;
 
@@ -47,7 +49,7 @@
           .then((data) => {
             if (data.length > 0) {
               data.forEach((post) => {
-                const path = `/s/<%= sub['name'] %>/viewPost/${post.post_id}`;
+                const path = `/s/<%= sub['name'] %>/view/${post.post_id}`;
                 const postHtml = `
                 <div class="post">
                   <h4><a href='${path}'>${post.title}</a></h4>
