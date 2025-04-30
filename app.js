@@ -133,9 +133,17 @@ app.get('/profile', async (req, res) => {
       `posted_by = '${await userf.convUsername(req.session.user)}'`
     );
 
-    console.log(await userf.convUsername(req.session.user));
+    const isAdmin = await func.fetchFromDB(
+      'role',
+      'users',
+      `name = '${req.session.user}' AND role = 'admin'`
+    );
 
-    res.render('profile', { profile: profile[0], posts: listOfPosts });
+    res.render('profile', {
+      profile: profile[0],
+      posts: listOfPosts,
+      isAdmin: isAdmin[0]['role'],
+    });
   }
 });
 
@@ -215,16 +223,16 @@ app.post('/loadMorePosts', async (req, res) => {
   res.json(newContent);
 });
 
-app.get('/s/:sub/createNewPost', async (req, res) => {
+app.get('/s/:sub/createNew', async (req, res) => {
   if (!req.session.user) {
-    res.cookie('redirect', `/s/${req.params.sub}/createNewPost`);
+    res.cookie('redirect', `/s/${req.params.sub}/createNew`);
     return res.redirect('/login');
   } else {
-    res.render('newPost', { subName: req.params.sub });
+    res.render('new', { subName: req.params.sub });
   }
 });
 
-app.get('/s/:sub/viewPost/:postID', async (req, res) => {
+app.get('/s/:sub/view/:postID', async (req, res) => {
   try {
     const sub_id = await func.fetchFromDB(
       'subforum_id',
@@ -250,7 +258,7 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
       // ensures data is not empty
       throw new Error('');
     } else {
-      res.render('viewPost', {
+      res.render('view', {
         post: postData[0],
         poster: posted_by[0]['name'],
         viewer: req.session.user,
@@ -264,7 +272,7 @@ app.get('/s/:sub/viewPost/:postID', async (req, res) => {
   }
 });
 
-app.post('/s/:sub/createNewPost', async (req, res) => {
+app.post('/s/:sub/createNew', async (req, res) => {
   try {
     const user = await func.fetchFromDB(
       'user_id',
@@ -292,7 +300,7 @@ app.post('/s/:sub/createNewPost', async (req, res) => {
       `title = '${req.body.title}' AND posted_by = '${user[0].user_id}'`
     );
 
-    let buildUp = `http://localhost:3000/s/${req.params.sub}/viewPost/${post_num[0]['post_id']}`;
+    let buildUp = `http://localhost:3000/s/${req.params.sub}/view/${post_num[0]['post_id']}`;
 
     res.status(200).redirect(buildUp);
   } catch (err) {
@@ -306,10 +314,9 @@ app.post('/api/updateLoadedPosts', (req, res) => {
 
   res.cookie('load', (currentAmount += 3), { sameSite: 'lax' });
   res.status(200).json({ success: true });
+});
 
-}
-  
-  app.get('/admin/dashboard', async (req, res) => {
+app.get('/admin/dashboard', async (req, res) => {
   const validationUser = await func.fetchFromDB(
     'role',
     'users',
@@ -325,6 +332,7 @@ app.post('/api/updateLoadedPosts', (req, res) => {
   } else {
     res.send('Unauthorized');
   }
+});
 
 app.post('/post/delete', async (req, res) => {
   try {
@@ -339,8 +347,4 @@ app.post('/post/delete', async (req, res) => {
     console.error(error);
     res.status(403).json({ error: 'Not authorized' });
   }
-});
-
-app.get('/admin/dashboard', (req, res) => {
-  res.render('dashboard');
 });
