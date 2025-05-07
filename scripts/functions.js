@@ -53,6 +53,7 @@ const fetchFromDB = async (selection, database, condition) => {
 const insertIntoDB = async (database, fields, values) => {
   return new Promise((resolve, reject) => {
     sql = `INSERT INTO ${database} (${fields}) VALUES (${values});`;
+    console.log(sql);
     db.run(sql, (err, response) => {
       if (err) {
         reject(err);
@@ -76,7 +77,21 @@ const deletePost = async (id) => {
   });
 };
 
+const deleteComment = async (id) => {
+  return new Promise((resolve, reject) => {
+    sql = `DELETE FROM comments WHERE comment_id = ${id}`;
+    db.run(sql, (err, respo) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(respo);
+      }
+    });
+  });
+};
+
 module.exports = {
+  deleteComment,
   fetchFromDB,
   deletePost,
   insertIntoDB,

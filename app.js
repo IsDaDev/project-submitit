@@ -252,17 +252,24 @@ app.get('/s/:sub/view/:postID', async (req, res) => {
       `user_id = '${postData[0]['posted_by']}'`
     );
 
+    const comments = await func.fetchFromDB(
+      '*',
+      'comments',
+      `post = '${req.params.postID}'`
+    );
+
     req.session.returnTo = `/s/${req.params.sub}`;
 
     if (postData.length == 0) {
       // ensures data is not empty
-      throw new Error('');
+      throw new Error('empty data returned');
     } else {
       res.render('view', {
         post: postData[0],
         poster: posted_by[0]['name'],
         viewer: req.session.user,
         suborum: req.params.sub,
+        comments,
       });
     }
   } catch (err) {
@@ -346,5 +353,36 @@ app.post('/post/delete', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(403).json({ error: 'Not authorized' });
+  }
+});
+
+app.post('/post/comment', async (req, res) => {
+  try {
+    if (req.session.user) {
+      const comment = await func.insertIntoDB(
+        'comments',
+        'poster, post, content',
+        `'${req.body.comment_creator}', '${req.body.post_id}', '${req.body.content}'`
+      );
+
+      res.json({ success: 1 });
+    } else {
+      throw new Error('Not logged in');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ error: error });
+  }
+});
+
+app.post('/post/comment/delete_comment', async (req, res) => {
+  try {
+    if (req.session.user) {
+      const deletion = await func.deleteComment(req.body.comment_id);
+      res.json({ success: 1 });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(404).json({ error });
   }
 });
