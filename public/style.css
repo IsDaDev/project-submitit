@@ -1,3 +1,7 @@
+* {
+  margin: 0;
+}
+
 body {
     background-color: rgb(255, 255, 255)
 };
@@ -10,7 +14,7 @@ body {
 
 form {
   text-align: center;
-  border-radius: 100%;
+  border-radius: 10px;
     background-color: aqua;
 }
 #username, #password, #submit {
@@ -19,6 +23,16 @@ form {
 }
 
 #navi {
-  height: fit-content 10%;
   background-color: gray;
+}
+
+.naviLink {
+  color: white;
+  padding-left: 15px;
+  display: flex;
+  list-style: none;
+}
+
+.naviLink a {
+  color: white;
 }
