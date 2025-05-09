@@ -39,13 +39,13 @@ module.exports = (app) => {
     if (
       !req.session.user &&
       req.originalUrl !== '/login' &&
+      req.originalUrl !== '/register' &&
       req.originalUrl !== '/' &&
-      req.originalUrl !== '/validateUsername' &&
-      req.originalUrl !== '/loadMorePosts' &&
-      req.originalUrl !== '/post/comment' &&
-      !req.originalUrl.startsWith('/public') &&
+      req.originalUrl !== '/user/validateUsername' &&
+      req.originalUrl !== '/logout' &&
+      !req.originalUrl.startsWith('/post') &&
       !req.originalUrl.startsWith('/s/') &&
-      !req.originalUrl.startsWith('/register')
+      !req.originalUrl.startsWith('/public')
     ) {
       req.session.redirectTo = req.originalUrl;
       return res.redirect('/login');

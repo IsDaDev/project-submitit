@@ -37,7 +37,7 @@
         const subforum = document.querySelector('.subforum_id').innerHTML;
         const startIndex = document.querySelectorAll('.post').length;
 
-        fetch('/loadMorePosts', {
+        fetch('/post/loadMorePosts', {
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
           body: JSON.stringify({
