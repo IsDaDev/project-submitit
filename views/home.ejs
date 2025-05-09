@@ -10,7 +10,9 @@
     <h1>home</h1>
 
     <% if (logged_in) { %>
-    <button id="profile_button"><a href="/profile">Show Profile</a></button>
+    <button id="profile_button">
+      <a href="/profile">Show Profile</a>
+    </button>
     <button id="logout"><a>Logout</a></button>
     <% } else { %>
     <button id="login"><a href="/login">Login</a></button>

@@ -82,7 +82,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/logout', (req, res) => {
+app.post('/user/logout', (req, res) => {
   if (!req.session) {
     return res.status(401).json({ message: 'No active session' });
   }
@@ -97,7 +97,7 @@ app.post('/logout', (req, res) => {
   });
 });
 
-app.post('/validateUsername', async (req, res) => {
+app.post('/user/validateUsername', async (req, res) => {
   let username = req.body.user.trim();
 
   if (typeof username !== 'string' || username == '') {
@@ -210,19 +210,6 @@ app.get('/s/:sub', async (req, res) => {
   }
 });
 
-app.post('/loadMorePosts', async (req, res) => {
-  const sub = req.body.sub;
-  const index = req.body.startIndex || 0;
-
-  let newContent = await func.fetchFromDB(
-    '*',
-    'posts',
-    `link_to_subforum = '${sub}' LIMIT 10 OFFSET ${index}`
-  );
-
-  res.json(newContent);
-});
-
 app.get('/s/:sub/createNew', async (req, res) => {
   if (!req.session.user) {
     res.cookie('redirect', `/s/${req.params.sub}/createNew`);
@@ -316,7 +303,20 @@ app.post('/s/:sub/createNew', async (req, res) => {
   }
 });
 
-app.post('/api/updateLoadedPosts', (req, res) => {
+app.post('/post/loadMorePosts', async (req, res) => {
+  const sub = req.body.sub;
+  const index = req.body.startIndex || 0;
+
+  let newContent = await func.fetchFromDB(
+    '*',
+    'posts',
+    `link_to_subforum = '${sub}' LIMIT 10 OFFSET ${index}`
+  );
+
+  res.json(newContent);
+});
+
+app.post('/post/updateLoadedPosts', (req, res) => {
   const currentAmount = req.cookies.load;
 
   res.cookie('load', (currentAmount += 3), { sameSite: 'lax' });
@@ -356,7 +356,7 @@ app.post('/post/delete', async (req, res) => {
   }
 });
 
-app.post('/post/comment', async (req, res) => {
+app.post('/post/comment/create_comment', async (req, res) => {
   try {
     if (req.session.user) {
       const comment = await func.insertIntoDB(
