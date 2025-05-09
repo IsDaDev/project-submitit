@@ -27,9 +27,10 @@
 
     <script>
       document.getElementById('logout').addEventListener('click', () => {
-        fetch('/logout', {
+        fetch('/user/logout', {
           method: 'POST',
           credentials: 'include',
+          headers: { 'Content-Type': 'application/JSON' },
         })
           .then((response) => response.json())
           .then((data) => {

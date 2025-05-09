@@ -42,8 +42,8 @@ module.exports = (app) => {
       req.originalUrl !== '/' &&
       req.originalUrl !== '/validateUsername' &&
       req.originalUrl !== '/loadMorePosts' &&
-      req.originalUrl !== '/post/comment' &&
-      !req.originalUrl.startsWith('/public') &&
+      req.originalUrl !== '/logout' &&
+      !req.originalUrl.startsWith('/post') &&
       !req.originalUrl.startsWith('/s/') &&
       !req.originalUrl.startsWith('/register')
     ) {
