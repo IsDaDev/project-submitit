@@ -1,21 +1,28 @@
 // TODO: add AGBs
 // ************************************
+
+// importes modules for express and .env
 const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
 
+// imports the functions from the files function.js and user.js
 const func = require('./scripts/functions.js');
 const userf = require('./scripts/user.js');
+
+// prepares the server
 const app = express();
 const port = process.env.PORT || 3000;
-const server = `http://localhost:${port}`;
 
+// requires the config file
 require('./scripts/config.js')(app);
 
+// starts the server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
+// root-route for home
 app.get('/', async (req, res) => {
   let userStatus = false;
   let subforumList = await func.fetchFromDB('*', 'subforums', '');
@@ -323,24 +330,6 @@ app.post('/post/updateLoadedPosts', (req, res) => {
   res.status(200).json({ success: true });
 });
 
-app.get('/admin/dashboard', async (req, res) => {
-  const validationUser = await func.fetchFromDB(
-    'role',
-    'users',
-    `name = '${req.session.user}'`
-  );
-
-  if (validationUser[0]['role'] == 'admin') {
-    const users = await func.fetchFromDB('*', 'users', '');
-    const posts = await func.fetchFromDB('*', 'posts', '');
-    const subs = await func.fetchFromDB('*', 'subforums', '');
-
-    res.render('dashboard', { users, posts, subs });
-  } else {
-    res.send('Unauthorized');
-  }
-});
-
 app.post('/post/delete', async (req, res) => {
   try {
     if (req.session.user == req.body.posted_by) {
@@ -367,7 +356,7 @@ app.post('/post/comment/create_comment', async (req, res) => {
 
       res.json({ success: 1 });
     } else {
-      throw new Error('Not logged in');
+      res.redirect('/login');
     }
   } catch (error) {
     console.error(error);
@@ -384,5 +373,23 @@ app.post('/post/comment/delete_comment', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(404).json({ error });
+  }
+});
+
+app.get('/admin/dashboard', async (req, res) => {
+  const validationUser = await func.fetchFromDB(
+    'role',
+    'users',
+    `name = '${req.session.user}'`
+  );
+
+  if (validationUser[0]['role'] == 'admin') {
+    const users = await func.fetchFromDB('*', 'users', '');
+    const posts = await func.fetchFromDB('*', 'posts', '');
+    const subs = await func.fetchFromDB('*', 'subforums', '');
+
+    res.render('dashboard', { users, posts, subs });
+  } else {
+    res.send('Unauthorized');
   }
 });

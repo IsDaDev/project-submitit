@@ -44,9 +44,9 @@
       const showWarning = (text, warning_element) => {
         warning_element.style.display = 'block';
         warning_element.innerHTML = text;
-        // document.querySelector('form').addEventListener('submit', (e) => {
-        //   e.preventDefault();
-        // });
+        document.querySelector('form').addEventListener('submit', (e) => {
+          e.preventDefault();
+        });
       };
 
       // validate username
