@@ -4,20 +4,88 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>View post</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <h2>Viewing post <%= post['post_id'] %></h2>
+    <h2>Post <%= post['post_id'] %></h2>
     <h3><%= post['title'] %></h3>
     <h3><%= post['content'] %></h3>
     <p>Posted by <%= poster %></p>
     <p>- <%= post['posted_date'] %></p>
-    <% if (viewer === poster) { %>
+
+    <% if (comments.length > 0) { %>
+    <div class="comments">
+      <h2>Comments</h2>
+
+      <% comments.forEach(element => { %>
+      <div class="comment <%= element['comment_id'] %>">
+        <p><%= element['content'] %></p>
+        <p>- <%= element['poster'] %></p>
+        <% if (viewer === element['poster']) %>
+        <button id="delete_comment">Delete Comment</button>
+      </div>
+      <% }) %>
+    </div>
+    <% } %> <% if (viewer === poster) { %>
     <button id="delete_button">Delete Post</button>
+    <br />
     <% } %>
+
+    <input type="text" name="comment_field" id="comment_field" />
+    <br />
+    <button id="comment_button">Leave a new comment</button>
+
+    <br />
     <button id="back_button">Go back</button>
     <script>
       const delete_button = document.querySelector('#delete_button');
+      const comment_button = document.querySelector('#comment_button');
+      const comment_delete_buttons =
+        document.querySelectorAll('#delete_comment');
+
+      comment_delete_buttons.forEach((ele) => {
+        ele.addEventListener('click', () => {
+          fetch('/post/comment/delete_comment', {
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            method: 'POST',
+            body: JSON.stringify({
+              comment_creator: '<%= viewer %>',
+              comment_id: ele.parentElement.classList[1],
+            }),
+          })
+            .then((res) => res.json())
+            .then(() => {
+              window.location.href = window.location.href;
+            });
+        });
+      });
+
+      if (comment_button) {
+        comment_button.addEventListener('click', () => {
+          const content = document.querySelector('#comment_field').value.trim();
+
+          if (content === '') {
+            alert('Comment cannot be empty.');
+            return;
+          }
+
+          fetch('/post/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              comment_creator: '<%= viewer %>',
+              content: content,
+              post_id: '<%= post["post_id"] %>',
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              window.location.href = window.location.href;
+            });
+        });
+      }
 
       if (delete_button) {
         delete_button.addEventListener('click', () => {
