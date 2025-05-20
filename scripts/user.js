@@ -1,45 +1,59 @@
+// imports modules 
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3');
 const path = require('path');
+const argon2 = require('argon2');
 const funcs = require('./functions.js');
 
+// filepath for the db file
 const filePath = path.join(__dirname, '..', 'data.db');
 
+// opens the db connection
 const db = new sqlite3.Database(filePath, sqlite3.OPEN_READWRITE, (err) => {
   if (err) {
     console.error('Error while connecting', err);
   }
 });
 
-const makeHash = (input) => {
-  return crypto.hash('sha512', input);
+// hash function to return the argon2 hash
+const hash = (input) => {
+  return argon2.hash(input);
 };
 
+// function to fetch all users from the db
 const fetchUserFromDB = async (user) => {
   try {
+    // new promise
     return new Promise((resolve, reject) => {
+      // secure sql to fight against sqli
       db.all(`SELECT * FROM users WHERE name = ?`, [user], (err, data) => {
         if (err) {
           reject(err);
         } else {
+          // resolves the promise
           resolve(data);
         }
       });
     });
+    // catches error
   } catch (error) {
     console.error(error);
   }
 };
 
+// function to insert new user to db
 const insertUser = async (username, password, bday) => {
   return new Promise((resolve, reject) => {
+    // runs sql statement to insert
     db.run(
       'INSERT INTO users (name, password, bday, acc_created) VALUES (?, ?, ?, ?)',
-      [username, makeHash(password), bday, funcs.getFormattedDate()],
+      [username, hash(password), bday, funcs.getFormattedDate()],
       (err, ret) => {
+        // error handling
         if (err) {
           reject(err);
         } else {
+          // resolves promise with data
           resolve(ret);
         }
       }
@@ -47,41 +61,53 @@ const insertUser = async (username, password, bday) => {
   });
 };
 
+// function to compare hashes
 const loginCheck = async (user, password) => {
   try {
+    // fethes user from db
     let result = await fetchUserFromDB(user);
 
+    // returns false if user does not exist
     if (result[0].length === 0) {
       return false;
     }
 
+    // checks hash of the password in the db with the hash of the entered pw
     if (result[0].password === makeHash(password)) {
       return true;
     } else {
       return false;
     }
+
+    // error handling
   } catch (error) {
     console.log(`Faulty login\nUser tried to log in via ${user}:${password}`);
     return false;
   }
 };
 
+// function to check if a username exists
 const checkIfUsernameAvailable = async (user) => {
+  // tries to fetch the user
   let result = await funcs.fetchFromDB('*', 'users', `name = '${user}'`);
 
+  // returns the amount of users
   return result.length;
 };
 
+// function to convert username in as ID into a name and otherwise
 const convUsername = async (user) => {
   try {
     return new Promise((resolve, reject) => {
       sql = '';
+      // checks the type and selects the correct sql statement
       if (typeof user === 'number') {
         sql = `SELECT name FROM users WHERE user_id = '${user}';`;
       } else {
         sql = `SELECT user_id FROM users WHERE name = '${user}';`;
       }
 
+      // fetches the opposite result of what is given
       db.all(sql, (err, data) => {
         if (err) {
           reject(err);
@@ -99,11 +125,14 @@ const convUsername = async (user) => {
   }
 };
 
+// function to modify some field for a user
 const modifyUser = async (user, field, newValue) => {
   try {
     return new Promise((resolve, reject) => {
+      // creates sql statement
       sql = `UPDATE users SET ${field} = ${newValue} WHERE user_id = ${user}`;
 
+      // runs it through the db
       db.all(sql, (err, data) => {
         if (err) {
           reject(err);
@@ -112,11 +141,14 @@ const modifyUser = async (user, field, newValue) => {
         }
       });
     });
+
+    // error handling
   } catch (err) {
     console.log(err);
   }
 };
 
+// exports modules
 module.exports = {
   loginCheck,
   checkIfUsernameAvailable,
