@@ -1,20 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 body {
   font-family: "Roboto", sans-serif;
-  color: greenyellow;
   font-optical-sizing: auto;
   font-weight: 800;
   font-style: normal;
   font-variation-settings:
-    "wdth" 100;}
+    "wdth" 100;
+}
+
+body{
+  color: red;
+}
 
 * {
   margin: 0;
 }
-
-body {
-    background-color: rgb(255, 255, 255)
-};
 
 #password_warning,
 #username_warning {
