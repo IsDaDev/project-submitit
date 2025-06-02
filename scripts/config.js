@@ -35,7 +35,7 @@ module.exports = (app) => {
   app.use(express.json());
 
   // sets a static directory for css files
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, '..', 'public')));
 
   // middleware so when the user goes to 'http://www.example.com/' 
   // it removes it 'http://www.example.com'

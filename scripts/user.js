@@ -16,7 +16,7 @@ const db = new sqlite3.Database(filePath, sqlite3.OPEN_READWRITE, (err) => {
 });
 
 // hash function to return the argon2 hash
-const hash = (input) => {
+const hash = async (input) => {
   return argon2.hash(input);
 };
 
@@ -43,17 +43,15 @@ const fetchUserFromDB = async (user) => {
 
 // function to insert new user to db
 const insertUser = async (username, password, bday) => {
+  const hashedPassword = await hash(password); // await the hash
   return new Promise((resolve, reject) => {
-    // runs sql statement to insert
     db.run(
       'INSERT INTO users (name, password, bday, acc_created) VALUES (?, ?, ?, ?)',
-      [username, hash(password), bday, funcs.getFormattedDate()],
+      [username, hashedPassword, bday, funcs.getFormattedDate()],
       (err, ret) => {
-        // error handling
         if (err) {
           reject(err);
         } else {
-          // resolves promise with data
           resolve(ret);
         }
       }
@@ -61,30 +59,27 @@ const insertUser = async (username, password, bday) => {
   });
 };
 
+
 // function to compare hashes
 const loginCheck = async (user, password) => {
   try {
-    // fethes user from db
     let result = await fetchUserFromDB(user);
 
-    // returns false if user does not exist
-    if (result[0].length === 0) {
+    if (!result || result.length === 0) {
       return false;
     }
 
-    // checks hash of the password in the db with the hash of the entered pw
-    if (result[0].password === makeHash(password)) {
-      return true;
-    } else {
-      return false;
-    }
+    // result[0].password is the hashed password stored in DB
+    const storedHash = result[0].password;
 
-    // error handling
+    const isMatch = await argon2.verify(storedHash, password);
+    return isMatch;
   } catch (error) {
     console.log(`Faulty login\nUser tried to log in via ${user}:${password}`);
     return false;
   }
 };
+
 
 // function to check if a username exists
 const checkIfUsernameAvailable = async (user) => {
