@@ -46,6 +46,16 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
+app.get('/gtc', (req, res) => {
+  // renders register
+  res.render('gtc');
+});
+
+app.get('/impressum', (req, res) => {
+  // renders register
+  res.render('impressum');
+});
+
 // GET-Route to login
 app.get('/login', (req, res) => {
   // checks if the user is already logged in
