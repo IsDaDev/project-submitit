@@ -3,14 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= sub['name'] %></title>
-    <link rel="stylesheet" href="/style.css" />
+    <title><%= sub['name'] %> | SubmitIt</title>
+    <link rel="stylesheet" href="/style.css">
   </head>
-  <body>
-    <p style="display: none" class="subforum_id"><%= sub['subforum_id'] %></p>
-    <h2>Welcome to <%= sub['name'] %></h2>
+  <body id="sub">
+    <p class="subforum_id" style="display: none;"><%= sub['subforum_id'] %></p>
+    
+    <div class="container-posts">
+      <div class="subforum-header">
+        <h2>Welcome to /s/<%= sub['name'] %></h2>
+      </div>
 
-    <div id="postsContainer">
+      <div id="postsContainer">
       <% posts.forEach(element => { %>
       <div class="post">
         <h4>
@@ -25,17 +29,33 @@
       </div>
       <% }) %>
     </div>
-
-    <button id="loadMorePosts">Load more ...</button>
-    <button id="createNew">
-      <a href="/s/<%= sub['name'] %>/createNew">Create new post</a>
-    </button>
-    <button id="goBack"><a href="/">Go back</a></button>
+      
+      <div class="button-group">
+        <button id="loadMorePosts">Load more posts</button>
+        <button id="createNew">
+          <a href="/s/<%= sub['name'] %>/createNew">Create new post</a>
+        </button>
+        <button id="goBack"><a href="/">Go back</a></button>
+      </div>
+    </div>
+    
+    <footer>
+      <div>&copy; 2025 SubmitIt. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="/impressum">Impressum</a>
+        <a href="/privacy">Data Privacy</a>
+      </div>
+    </footer>
 
     <script>
       document.querySelector('#loadMorePosts').addEventListener('click', () => {
-        const subforum = document.querySelector('.subforum_id').innerHTML;
+        const subforum = document.querySelector('.subforum_id').textContent;
         const startIndex = document.querySelectorAll('.post').length;
+        const loadButton = document.querySelector('#loadMorePosts');
+        
+        // Show loading state
+        loadButton.textContent = 'Loading...';
+        loadButton.disabled = true;
 
         fetch('/post/loadMorePosts', {
           headers: { 'Content-Type': 'application/json' },
@@ -53,20 +73,25 @@
                 const postHtml = `
                 <div class="post">
                   <h4><a href='${path}'>${post.title}</a></h4>
-                  <p>${post.content}</p>
+                  <p>${post.content.slice(0, 50)}${post.content.length > 50 ? '...' : ''}</p>
                 </div>
               `;
                 document
                   .querySelector('#postsContainer')
                   .insertAdjacentHTML('beforeend', postHtml);
               });
+              loadButton.textContent = 'Load more posts';
             } else {
-              document.querySelector('#loadMorePosts').textContent =
-                'No more posts to load';
+              loadButton.textContent = 'No more posts to load';
+              loadButton.style.opacity = '0.7';
             }
           })
           .catch((err) => {
             console.error('Error loading posts:', err);
+            loadButton.textContent = 'Error loading posts';
+          })
+          .finally(() => {
+            loadButton.disabled = false;
           });
       });
     </script>

@@ -127,7 +127,7 @@ app.post('/login', async (req, res) => {
 });
 
 // POST-Route to log the user otu
-app.post('/user/logout', (req, res) => {
+app.get('/logout', (req, res) => {
   // if the user is not logged in
   if (!req.session) {
     // returns an error message
@@ -146,7 +146,7 @@ app.post('/user/logout', (req, res) => {
     res.clearCookie('connect.sid');
 
     // sends a response
-    res.json({ message: 'Logout successful', redirect: '/login' });
+    res.redirect('/')
   });
 });
 
@@ -316,18 +316,20 @@ app.get('/s/:sub/view/:postID', async (req, res) => {
       // ensures data is not empty
       throw new Error('empty data returned');
     } else {
+      console.log(posted_by)
       // if the post exists it renders the post and passes all the arguments
       res.render('view', {
         post: postData[0],
         poster: posted_by[0]['name'],
         viewer: req.session.user,
-        suborum: req.params.sub,
+        subforum: req.params.sub,
         comments,
       });
     }
 
     // catches errors and prints them on a 404 page
   } catch (err) {
+    console.log(err)
     res
       .status(404)
       .render('404', { errorMsg: 'The page you requested does not exist' });
@@ -396,6 +398,7 @@ app.post('/post/loadMorePosts', async (req, res) => {
   );
 
   // sends the new posts in json format back to the frontend to handle
+  console.log(JSON.stringify(newContent))
   res.json(newContent);
 });
 
@@ -431,30 +434,44 @@ app.post('/post/delete', async (req, res) => {
 
 // POST-Route to create a new comment
 app.post('/post/comment/create_comment', async (req, res) => {
+
   try {
-    // checks if the user is logged in
-    if (req.session.user) {
-      // inserts a new comment into the database
-      const comment = await func.insertIntoDB(
-        'comments',
-        'poster, post, content',
-        `'${req.body.comment_creator}', '${req.body.post_id}', '${req.body.content}'`
-      );
-
-      // returns a success status code
-      res.json({ success: 1 });
-
-      // if the user is not logged in he gets redirected to the login page
-    } else {
-      res.redirect('/login');
+    // 1. Require login
+    if (!req.session.user) {
+      return res.status(401).json({ error: 'Unauthorized', redirect: "/login" });
     }
 
-    // catches and prints errors
+    const { post_id, content } = req.body;
+    const username = req.session.user;
+
+    console.log(post_id + " : " + content + " : " + username)
+
+    // 2. Validate input
+    if (!post_id || !content) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // 3. Get user ID from username
+    const user_id = await userf.convUsername(username);
+
+    console.log(`${user_id}, ${post_id}, '${content.replace(/'/g, "''")}'`)
+
+    // 4. Use parameterized insertion or properly formatted string
+    await func.insertIntoDB(
+      'comments',
+      'poster, poster_id, post, content',
+      `'${username}', ${user_id}, ${post_id}, '${content.replace(/'/g, "''")}'`
+    );
+
+    res.json({ success: 1 });
+
   } catch (error) {
-    console.error(error);
-    res.status(404).json({ error: error });
+    console.error('Error inserting comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
 
 // POST-Route to delete comments
 app.post('/post/comment/delete_comment', async (req, res) => {

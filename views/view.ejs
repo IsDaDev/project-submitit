@@ -3,40 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>View post</title>
+    <title>View post - <%= post['title'] %> | SubmitIt</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <h2>Post <%= post['post_id'] %></h2>
-    <h3><%= post['title'] %></h3>
-    <h3><%= post['content'] %></h3>
-    <p>Posted by <%= poster %></p>
-    <p>- <%= post['posted_date'] %></p>
-
-    <% if (comments.length > 0) { %>
-    <div class="comments">
-      <h2>Comments</h2>
-
-      <% comments.forEach(element => { %>
-      <div class="comment <%= element['comment_id'] %>">
-        <p><%= element['content'] %></p>
-        <p>- <%= element['poster'] %></p>
-        <% if (viewer === element['poster']) %>
-        <button id="delete_comment">Delete Comment</button>
-      </div>
-      <% }) %>
+    <div id="navi">
+      <ul class="naviLink">
+        <li><a href="/">Home</a></li>
+        <li><a href="/s/<%= subforum %>">Back to Subforum</a></li>
+      </ul>
     </div>
-    <% } %> <% if (viewer === poster) { %>
-    <button id="delete_button">Delete Post</button>
-    <br />
-    <% } %>
 
-    <input type="text" name="comment_field" id="comment_field" />
-    <br />
-    <button id="comment_button">Leave a new comment</button>
+    <div class="container">
+      <div class="post">
+        <h1><%= post['title'] %></h1>
+        <p class="mb-2"><%= post['content'] %></p>
+        <p class="mb-1">Posted by <%= poster %></p>
+        <p>- <%= post['posted_date'] %></p>
+      </div>
 
-    <br />
-    <button id="back_button">Go back</button>
+      <% if (viewer === poster) { %>
+        <button class="btn-danger" id="delete_button">Delete Post</button>
+      <% } %>
+
+      <% if (comments.length > 0) { %>
+      <div class="comments">
+        <h2>Comments</h2>
+        <% comments.forEach(element => { %>
+        <div class="comment <%= element['comment_id'] %>">
+          <p><%= element['content'] %></p>
+          <p>- <%= element['poster'] %></p>
+          <% if (viewer === element['poster']) { %>
+          <button class="btn-danger" id="delete_comment">Delete Comment</button>
+          <% } %>
+        </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <div class="form-group mt-3">
+        <label for="comment_field">Add a comment:</label>
+        <textarea name="comment_field" id="comment_field" rows="3"></textarea>
+        <button class="btn-primary" id="comment_button">Post Comment</button>
+      </div>
+
+      <button class="btn-gray" id="back_button">Go back</button>
+    </div>
+
+    <footer>
+      <div>&copy; 2025 SubmitIt. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="/impressum">Impressum</a>
+        <a href="/privacy">Data Privacy</a>
+      </div>
+    </footer>
     <script>
       const delete_button = document.querySelector('#delete_button');
       const comment_button = document.querySelector('#comment_button');
@@ -75,14 +95,18 @@
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-              comment_creator: '<%= viewer %>',
               content: content,
               post_id: '<%= post["post_id"] %>',
             }),
           })
             .then((res) => res.json())
             .then((data) => {
-              window.location.href = window.location.href;
+              if (data.redirect) {
+                window.location.href = "/login"
+              } else {
+                window.location.href = window.location.href;
+              }
+              
             });
         });
       }
@@ -108,7 +132,7 @@
               }
             })
             .catch((err) => {
-              console.error('Delete failed:', err);
+              console.log('Delete failed:', err);
               alert('An error occurred while deleting the post.');
             });
         });

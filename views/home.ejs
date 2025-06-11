@@ -3,121 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>logged_in_user</title>
-    <style>
-
-      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
-body {
-  font-family: "Roboto", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 800;
-  font-style: normal;
-  font-variation-settings:
-    "wdth" 100;
-    color: white;
-    background-color: gray;
-    text-transform: uppercase;
-    text-align: center;
-}
-
-h1 {
-  font-size: 500%;
-}
-
-button {
-  background-color: white;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-   font-family: "Roboto", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 800;
-  font-style: normal;
-  font-variation-settings:
-    "wdth" 100;
-}
-
-button:hover {
-  background-color: rgb(176, 247, 255);
-}
-
-* {
-  margin: 0;
-}
-
-#password_warning,
-#username_warning {
-  display: none;
-  color: red;
-}
-
-form {
-  text-align: center;
-  border-radius: 10px;
-    background-color: aqua;
-}
-#username, #password, #submit {
-  background-color: gray;
-  color: white;
-}
-
-#navi {
-  background-color: black;
-}
-
-.naviLink {
-  color: black;
-  padding-left: 15px;
-  display: flex;
-  list-style: none;
-}
-
-.naviLink a {
-  color: black;
-}
-
-    </style>
+    <title>SubmitIt</title>
+    <link rel="stylesheet" href="style.css">
   </head>
   <body>
-
     <% if (logged_in) { %>
-    <button id="profile_button">
-      <a href="/profile">Show Profile</a>
-    </button>
-    <button id="logout"><a>LOGOUT</a></button>
+      <nav id="navi">
+        <ul class="naviLink">
+          <li><a href="/profile">Profile</a></li>
+          <li><a href="/logout">Logout</a></li>
+        </ul>
+      </nav>
     <% } else { %>
-      <div id="navi">
-        <br />
-      <ul class="naviLink">
-    <li></li><button id="login"><a href="/login">LOGIN</a></button></li>
-    <li></li><button id="register"><a href="/register">REGISTER</a></button></li>
-    </ul><br /></div>
+      <nav id="navi" class="navi">
+        <ul class="naviLink">
+          <li><a href="/login">Login</a></li>
+          <li><a href="/register">Register</a></li>
+        </ul>
+      </nav>
     <% } %>
 
-    <h1>home</h1>
+    <div class="container">
+      <h1>SubmitIt</h1>
+      
+      <h3>Explore Communities</h3>
+      
+      <div class="subforum-grid">
+        <% subforumList.forEach(element => { %>
+          <div class="subforum-card">
+            <h5>
+              <a href="/s/<%= element['name'] %>">/s/<%= element['name'] %></a>
+            </h5>
+          </div>
+        <% }) %>
+      </div>
+    </div>
 
-    <h3>List of subforums:</h3>
-    <% subforumList.forEach(element => { %>
-    <h5>
-      <a href="/s/<%= element['name'] %>">Subforum <%= element['name'] %> </a>
-    </h5>
-    <% }) %>
-
-    <script>
-      document.getElementById('logout').addEventListener('click', () => {
-        fetch('/user/logout', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/JSON' },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.redirect) {
-              window.location.href = data.redirect;
-            }
-          })
-          .catch((err) => console.error('Error logging out:', err));
-      });
-    </script>
+    <footer>
+      <div>&copy; 2025 SubmitIt. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="/impressum">Impressum</a>
+        <a href="/privacy">Data Privacy</a>
+      </div>
+    </footer>
   </body>
 </html>

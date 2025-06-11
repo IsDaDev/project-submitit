@@ -31,7 +31,6 @@ module.exports = (app) => {
   );
 
   // tells the app to use json
-  app.use(bodyParser.json());
   app.use(express.json());
 
   // sets a static directory for css files
@@ -51,6 +50,7 @@ module.exports = (app) => {
   app.use((req, res, next) => {
     if (
       !req.session.user &&
+      req.originalUrl !== '/favicon.ico' &&
       req.originalUrl !== '/login' &&
       req.originalUrl !== '/register' &&
       req.originalUrl !== '/' &&
@@ -58,7 +58,8 @@ module.exports = (app) => {
       req.originalUrl !== '/logout' &&
       !req.originalUrl.startsWith('/post') &&
       !req.originalUrl.startsWith('/s/') &&
-      !req.originalUrl.startsWith('/public')
+      !req.originalUrl.startsWith('/public') &&
+      !req.originalUrl.startsWith('/post/comment/create_comment')
     ) {
       req.session.redirectTo = req.originalUrl;
       return res.redirect('/login');

@@ -3,26 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Userprofile</title>
+    <title><%= profile['name'] %>'s Profile | SubmitIt</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <% if (isAdmin == 'admin') { %>
-    <button><a href="/admin/dashboard">Dashboard</a></button>
-    <% } %>
-    <h1>Profile of <%= profile['name'] %></h1>
-    <p>Posts: <%= profile['posts_count'] %></p>
-    <p>Bday: <%= profile['bday'] %></p>
-    <p>Profile created: <%= profile['acc_created'] %></p>
-
-    <h3>Posts:</h3>
-
-    <% posts.forEach(element => { %>
-    <div class="post">
-      <h4><%= element['title'] %></h4>
-      <p><%= element['content'] %></p>
+    <div id="navi">
+      <ul class="naviLink">
+        <li><a href="/">Home</a></li>
+        <% if (isAdmin == 'admin') { %>
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+        <% } %>
+      </ul>
     </div>
-    <% }) %>
-    <button><a href="/">Go back</a></button>
+
+    <div class="container">
+      <h1>Profile of <%= profile['name'] %></h1>
+      <div class="mb-3">
+        <p>Posts: <%= profile['posts_count'] %></p>
+        <p>Birthday: <%= profile['bday'] %></p>
+        <p>Member since: <%= profile['acc_created'] %></p>
+      </div>
+
+      <h3>Recent Posts:</h3>
+      <div id="postsContainer">
+        <% posts.forEach(element => { %>
+        <div class="post">
+          <h4><%= element['title'] %></a>
+          <p><%= element['content'] %></p>
+        </div>
+        <% }) %>
+      </div>
+
+      <button class="btn-gray mt-3"><a href="/">Go back</a></button>
+    </div>
+
+    <footer>
+      <div>&copy; 2025 SubmitIt. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="/impressum">Impressum</a>
+        <a href="/privacy">Data Privacy</a>
+      </div>
+    </footer>
   </body>
 </html>
