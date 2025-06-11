@@ -52,6 +52,8 @@ module.exports = (app) => {
       !req.session.user &&
       req.originalUrl !== '/favicon.ico' &&
       req.originalUrl !== '/login' &&
+      req.originalUrl !== '/gtc' &&
+      req.originalUrl !== '/impressum' &&
       req.originalUrl !== '/register' &&
       req.originalUrl !== '/' &&
       req.originalUrl !== '/user/validateUsername' &&
