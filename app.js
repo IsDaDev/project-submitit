@@ -522,3 +522,11 @@ app.get('/admin/dashboard', async (req, res) => {
     res.send('Unauthorized');
   }
 });
+
+app.get('/impressum', (req, res) => {
+  res.render('impressum')
+})
+
+app.get('/privacy', (req, res) => {
+  res.render('privacy')
+})
